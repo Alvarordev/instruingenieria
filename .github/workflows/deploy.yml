@@ -48,4 +48,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Dokploy redeploy
-        run: curl -f -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}"
+        run: |
+          response=$(curl -sS -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "X-GitHub-Event: push" \
+            -d '{"ref":"refs/heads/main","repository":{"full_name":"${{ github.repository }}"}}' \
+            -w "\nHTTP:%{http_code}")
+          echo "$response"
+          status="${response##*HTTP:}"
+          [ "$status" = "200" ]
