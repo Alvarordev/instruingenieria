@@ -1,0 +1,122 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { apiJson } from "../../../lib/api";
+
+interface Service {
+  id: number;
+  name: string;
+  slug: string;
+  group: "metrologia" | "servicios";
+  categoryId: number | null;
+}
+
+const groupParam = Astro.url.searchParams.get("group");
+const activeTab: "metrologia" | "servicios" | "todos" =
+  groupParam === "servicios" || groupParam === "todos" ? groupParam : "metrologia";
+
+const query = activeTab === "todos" ? "" : `?group=${activeTab}`;
+const cookie = Astro.request.headers.get("cookie") ?? "";
+const services = (await apiJson<Service[]>(`/api/admin/services${query}`, { headers: { cookie } })) ?? [];
+
+const tabs = [
+  { key: "metrologia", label: "Metrología", href: "/admin/servicios?group=metrologia" },
+  { key: "servicios", label: "Servicios", href: "/admin/servicios?group=servicios" },
+  { key: "todos", label: "Todos", href: "/admin/servicios?group=todos" },
+];
+---
+
+<AdminLayout title="Servicios">
+  <div class="mb-6 flex items-center justify-between">
+    <h1 class="text-2xl font-semibold text-brand-purple">Servicios y laboratorios</h1>
+    <a
+      href={`/admin/servicios/nuevo${activeTab !== "todos" ? `?group=${activeTab}` : ""}`}
+      class="rounded-pill bg-brand-blue px-5 py-2 text-sm font-bold uppercase text-white hover:bg-sky-600"
+    >
+      + Nuevo
+    </a>
+  </div>
+
+  <div class="mb-4 flex gap-2 border-b border-black/10">
+    {
+      tabs.map((tab) => (
+        <a
+          href={tab.href}
+          class:list={[
+            "border-b-2 px-4 py-2 text-sm font-semibold uppercase",
+            activeTab === tab.key
+              ? "border-brand-blue text-brand-blue"
+              : "border-transparent text-black/50 hover:text-black",
+          ]}
+        >
+          {tab.label}
+        </a>
+      ))
+    }
+  </div>
+
+  <p class="mb-4 text-sm text-black/60">{services.length} resultados</p>
+
+  <div class="overflow-x-auto rounded-card border border-black/10 bg-white">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-gray-50 text-xs uppercase text-black/50">
+        <tr>
+          <th class="px-4 py-3">Nombre</th>
+          <th class="px-4 py-3">Grupo</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          services.map((s) => (
+            <tr class="border-t border-black/5">
+              <td class="px-4 py-3 font-medium text-black">{s.name}</td>
+              <td class="px-4 py-3 text-black/70">{s.group}</td>
+              <td class="px-4 py-3">
+                <div class="flex justify-end gap-3">
+                  <a href={`/admin/servicios/${s.id}`} class="font-semibold text-brand-blue hover:underline">
+                    Editar
+                  </a>
+                  <button
+                    type="button"
+                    data-delete-id={s.id}
+                    data-delete-name={s.name}
+                    class="font-semibold text-red-600 hover:underline"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))
+        }
+        {
+          services.length === 0 && (
+            <tr>
+              <td colspan="3" class="px-4 py-6 text-center text-black/50">
+                No hay resultados todavía.
+              </td>
+            </tr>
+          )
+        }
+      </tbody>
+    </table>
+  </div>
+</AdminLayout>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-delete-id]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const id = button.dataset.deleteId;
+      const name = button.dataset.deleteName;
+      if (!confirm(`¿Eliminar "${name}"? Esta acción no se puede deshacer.`)) return;
+
+      const res = await fetch(`/api/admin/services/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error ?? "No se pudo eliminar.");
+        return;
+      }
+      window.location.reload();
+    });
+  });
+</script>

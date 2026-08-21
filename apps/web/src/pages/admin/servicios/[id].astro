@@ -1,0 +1,39 @@
+---
+import ServiceForm from "../../../components/svelte/ServiceForm.svelte";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { apiJson } from "../../../lib/api";
+
+interface Service {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  group: "metrologia" | "servicios";
+  categoryId: number | null;
+  items: string[] | null;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  parentId: number | null;
+}
+
+const { id } = Astro.params;
+
+const [allServices, categories] = await Promise.all([
+  apiJson<Service[]>("/api/services"),
+  apiJson<Category[]>("/api/categories"),
+]);
+
+const service = (allServices ?? []).find((s) => s.id === Number(id));
+
+if (!service) {
+  return Astro.redirect("/admin/servicios");
+}
+---
+
+<AdminLayout title="Editar servicio">
+  <h1 class="mb-6 text-2xl font-semibold text-brand-purple">Editar servicio</h1>
+  <ServiceForm client:load service={service} categories={categories ?? []} />
+</AdminLayout>

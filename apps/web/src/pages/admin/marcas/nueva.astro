@@ -1,0 +1,9 @@
+---
+import BrandForm from "../../../components/svelte/BrandForm.svelte";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Nueva marca">
+  <h1 class="mb-6 text-2xl font-semibold text-brand-purple">Nueva marca</h1>
+  <BrandForm client:load />
+</AdminLayout>

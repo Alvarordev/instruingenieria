@@ -1,0 +1,17 @@
+---
+import ProductForm from "../../../components/svelte/ProductForm.svelte";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { apiJson } from "../../../lib/api";
+
+const categories =
+  (await apiJson<{ id: number; name: string; parentId: number | null }[]>("/api/categories")) ?? [];
+const brands = (await apiJson<{ id: number; name: string }[]>("/api/brands")) ?? [];
+
+const typeParam = Astro.url.searchParams.get("type");
+const defaultType = typeParam === "alquiler" || typeParam === "venta" ? typeParam : "venta";
+---
+
+<AdminLayout title="Nuevo producto">
+  <h1 class="mb-6 text-2xl font-semibold text-brand-purple">Nuevo producto</h1>
+  <ProductForm client:load categories={categories} brands={brands} defaultType={defaultType} />
+</AdminLayout>

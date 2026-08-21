@@ -1,0 +1,149 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { apiJson } from "../../../lib/api";
+
+interface Product {
+  id: number;
+  name: string;
+  type: "venta" | "alquiler";
+  categoryId: number;
+  brandId: number | null;
+  active: boolean;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  parentId: number | null;
+}
+
+interface Brand {
+  id: number;
+  name: string;
+}
+
+const typeParam = Astro.url.searchParams.get("type");
+const activeTab: "alquiler" | "venta" | "todos" = typeParam === "venta" || typeParam === "todos" ? typeParam : "alquiler";
+
+const cookie = Astro.request.headers.get("cookie") ?? "";
+const query = activeTab === "todos" ? "" : `?type=${activeTab}`;
+
+const [products, categories, brands] = await Promise.all([
+  apiJson<Product[]>(`/api/admin/products${query}`, { headers: { cookie } }),
+  apiJson<Category[]>("/api/categories"),
+  apiJson<Brand[]>("/api/brands"),
+]);
+
+const productList = products ?? [];
+const categoryById = new Map((categories ?? []).map((c) => [c.id, c]));
+const brandById = new Map((brands ?? []).map((b) => [b.id, b]));
+
+const tabs = [
+  { key: "alquiler", label: "Alquiler", href: "/admin/productos?type=alquiler" },
+  { key: "venta", label: "Venta", href: "/admin/productos?type=venta" },
+  { key: "todos", label: "Todos", href: "/admin/productos?type=todos" },
+];
+
+const tabLabel = activeTab === "todos" ? "productos" : `equipos en ${activeTab}`;
+---
+
+<AdminLayout title="Productos">
+  <div class="mb-6 flex items-center justify-between">
+    <h1 class="text-2xl font-semibold text-brand-purple">Productos</h1>
+    <a
+      href={`/admin/productos/nuevo${activeTab !== "todos" ? `?type=${activeTab}` : ""}`}
+      class="rounded-pill bg-brand-blue px-5 py-2 text-sm font-bold uppercase text-white hover:bg-sky-600"
+    >
+      + Nuevo equipo
+    </a>
+  </div>
+
+  <div class="mb-4 flex gap-2 border-b border-black/10">
+    {
+      tabs.map((tab) => (
+        <a
+          href={tab.href}
+          class:list={[
+            "border-b-2 px-4 py-2 text-sm font-semibold uppercase",
+            activeTab === tab.key
+              ? "border-brand-blue text-brand-blue"
+              : "border-transparent text-black/50 hover:text-black",
+          ]}
+        >
+          {tab.label}
+        </a>
+      ))
+    }
+  </div>
+
+  <p class="mb-4 text-sm text-black/60">
+    {productList.length} {tabLabel}
+  </p>
+
+  <div class="overflow-x-auto rounded-card border border-black/10 bg-white">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-gray-50 text-xs uppercase text-black/50">
+        <tr>
+          <th class="px-4 py-3">Nombre</th>
+          <th class="px-4 py-3">Marca</th>
+          <th class="px-4 py-3">Subcategoría</th>
+          <th class="px-4 py-3">Activo</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          productList.map((p) => (
+            <tr class="border-t border-black/5">
+              <td class="px-4 py-3 font-medium text-black">{p.name}</td>
+              <td class="px-4 py-3 text-black/70">{p.brandId ? (brandById.get(p.brandId)?.name ?? "—") : "—"}</td>
+              <td class="px-4 py-3 text-black/70">{categoryById.get(p.categoryId)?.name ?? "—"}</td>
+              <td class="px-4 py-3 text-black/70">{p.active ? "Sí" : "No"}</td>
+              <td class="px-4 py-3">
+                <div class="flex justify-end gap-3">
+                  <a href={`/admin/productos/${p.id}`} class="font-semibold text-brand-blue hover:underline">
+                    Editar
+                  </a>
+                  <button
+                    type="button"
+                    data-delete-id={p.id}
+                    data-delete-name={p.name}
+                    class="font-semibold text-red-600 hover:underline"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))
+        }
+        {
+          productList.length === 0 && (
+            <tr>
+              <td colspan="5" class="px-4 py-6 text-center text-black/50">
+                No hay {tabLabel} todavía.
+              </td>
+            </tr>
+          )
+        }
+      </tbody>
+    </table>
+  </div>
+</AdminLayout>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-delete-id]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const id = button.dataset.deleteId;
+      const name = button.dataset.deleteName;
+      if (!confirm(`¿Eliminar "${name}"? Esta acción no se puede deshacer.`)) return;
+
+      const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        alert("No se pudo eliminar el producto.");
+        return;
+      }
+      window.location.reload();
+    });
+  });
+</script>

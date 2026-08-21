@@ -1,0 +1,88 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { apiJson } from "../../../lib/api";
+
+interface Brand {
+  id: number;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+}
+
+const brands = (await apiJson<Brand[]>("/api/brands")) ?? [];
+---
+
+<AdminLayout title="Marcas">
+  <div class="mb-6 flex items-center justify-between">
+    <h1 class="text-2xl font-semibold text-brand-purple">Marcas</h1>
+    <a
+      href="/admin/marcas/nueva"
+      class="rounded-pill bg-brand-blue px-5 py-2 text-sm font-bold uppercase text-white hover:bg-sky-600"
+    >
+      + Nueva marca
+    </a>
+  </div>
+
+  <p class="mb-4 text-sm text-black/60">{brands.length} marcas</p>
+
+  <div class="overflow-x-auto rounded-card border border-black/10 bg-white">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-gray-50 text-xs uppercase text-black/50">
+        <tr>
+          <th class="px-4 py-3">Logo</th>
+          <th class="px-4 py-3">Nombre</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          brands.map((b) => (
+            <tr class="border-t border-black/5">
+              <td class="px-4 py-3">
+                {b.logoUrl ? (
+                  <img src={b.logoUrl} alt={b.name} class="h-8 w-auto object-contain" />
+                ) : (
+                  <span class="text-black/30">—</span>
+                )}
+              </td>
+              <td class="px-4 py-3 font-medium text-black">{b.name}</td>
+              <td class="px-4 py-3">
+                <div class="flex justify-end gap-3">
+                  <a href={`/admin/marcas/${b.id}`} class="font-semibold text-brand-blue hover:underline">
+                    Editar
+                  </a>
+                  <button
+                    type="button"
+                    data-delete-id={b.id}
+                    data-delete-name={b.name}
+                    class="font-semibold text-red-600 hover:underline"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+</AdminLayout>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-delete-id]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const id = button.dataset.deleteId;
+      const name = button.dataset.deleteName;
+      if (!confirm(`¿Eliminar "${name}"? Esta acción no se puede deshacer.`)) return;
+
+      const res = await fetch(`/api/admin/brands/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error ?? "No se pudo eliminar la marca.");
+        return;
+      }
+      window.location.reload();
+    });
+  });
+</script>

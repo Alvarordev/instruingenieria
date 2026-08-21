@@ -1,0 +1,90 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { apiJson } from "../../../lib/api";
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  parentId: number | null;
+}
+
+const categories = (await apiJson<Category[]>("/api/categories")) ?? [];
+const topLevel = categories.filter((c) => c.parentId === null);
+function leavesOf(parentId: number) {
+  return categories.filter((c) => c.parentId === parentId);
+}
+---
+
+<AdminLayout title="Categorías">
+  <div class="mb-6 flex items-center justify-between">
+    <h1 class="text-2xl font-semibold text-brand-purple">Categorías</h1>
+    <a
+      href="/admin/categorias/nueva"
+      class="rounded-pill bg-brand-blue px-5 py-2 text-sm font-bold uppercase text-white hover:bg-sky-600"
+    >
+      + Nueva categoría
+    </a>
+  </div>
+
+  <p class="mb-4 text-sm text-black/60">{topLevel.length} tipos, {categories.length - topLevel.length} subcategorías</p>
+
+  <div class="flex flex-col gap-6">
+    {
+      topLevel.map((parent) => (
+        <div class="overflow-hidden rounded-card border border-black/10 bg-white">
+          <div class="flex items-center justify-between bg-gray-50 px-4 py-3">
+            <span class="font-semibold text-black">{parent.name}</span>
+            <div class="flex items-center gap-3 text-sm">
+              <a href={`/admin/categorias/nueva?parentId=${parent.id}`} class="font-semibold text-brand-blue hover:underline">
+                + Subcategoría
+              </a>
+              <a href={`/admin/categorias/${parent.id}`} class="font-semibold text-brand-blue hover:underline">
+                Editar
+              </a>
+              <button type="button" data-delete-id={parent.id} data-delete-name={parent.name} class="font-semibold text-red-600 hover:underline">
+                Eliminar
+              </button>
+            </div>
+          </div>
+          <ul>
+            {leavesOf(parent.id).map((leaf) => (
+              <li class="flex items-center justify-between border-t border-black/5 px-4 py-2 pl-8 text-sm">
+                <span class="text-black/80">{leaf.name}</span>
+                <div class="flex items-center gap-3">
+                  <a href={`/admin/categorias/${leaf.id}`} class="font-semibold text-brand-blue hover:underline">
+                    Editar
+                  </a>
+                  <button type="button" data-delete-id={leaf.id} data-delete-name={leaf.name} class="font-semibold text-red-600 hover:underline">
+                    Eliminar
+                  </button>
+                </div>
+              </li>
+            ))}
+            {leavesOf(parent.id).length === 0 && (
+              <li class="border-t border-black/5 px-4 py-2 pl-8 text-sm text-black/40">Sin subcategorías</li>
+            )}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+</AdminLayout>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-delete-id]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const id = button.dataset.deleteId;
+      const name = button.dataset.deleteName;
+      if (!confirm(`¿Eliminar "${name}"? Esta acción no se puede deshacer.`)) return;
+
+      const res = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error ?? "No se pudo eliminar la categoría.");
+        return;
+      }
+      window.location.reload();
+    });
+  });
+</script>

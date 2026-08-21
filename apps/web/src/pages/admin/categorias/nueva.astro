@@ -1,0 +1,23 @@
+---
+import CategoryForm from "../../../components/svelte/CategoryForm.svelte";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { apiJson } from "../../../lib/api";
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  parentId: number | null;
+}
+
+const categories = (await apiJson<Category[]>("/api/categories")) ?? [];
+const topLevelCategories = categories.filter((c) => c.parentId === null);
+
+const parentIdParam = Astro.url.searchParams.get("parentId");
+const defaultParentId = parentIdParam ?? "";
+---
+
+<AdminLayout title="Nueva categoría">
+  <h1 class="mb-6 text-2xl font-semibold text-brand-purple">Nueva categoría</h1>
+  <CategoryForm client:load topLevelCategories={topLevelCategories} defaultParentId={defaultParentId} />
+</AdminLayout>

@@ -1,0 +1,39 @@
+---
+import ProductForm from "../../../components/svelte/ProductForm.svelte";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { apiJson } from "../../../lib/api";
+
+interface Product {
+  id: number;
+  name: string;
+  tagline: string | null;
+  description: string | null;
+  specs: string[] | null;
+  applications: string[] | null;
+  categoryId: number;
+  brandId: number | null;
+  type: "venta" | "alquiler";
+  price: number | null;
+  imageUrl: string | null;
+  fichaTecnicaUrl: string | null;
+  active: boolean;
+}
+
+const { id } = Astro.params;
+const cookie = Astro.request.headers.get("cookie") ?? "";
+
+const [product, categories, brands] = await Promise.all([
+  apiJson<Product>(`/api/admin/products/${id}`, { headers: { cookie } }),
+  apiJson<{ id: number; name: string; parentId: number | null }[]>("/api/categories"),
+  apiJson<{ id: number; name: string }[]>("/api/brands"),
+]);
+
+if (!product) {
+  return Astro.redirect("/admin/productos");
+}
+---
+
+<AdminLayout title="Editar producto">
+  <h1 class="mb-6 text-2xl font-semibold text-brand-purple">Editar producto</h1>
+  <ProductForm client:load product={product} categories={categories ?? []} brands={brands ?? []} />
+</AdminLayout>

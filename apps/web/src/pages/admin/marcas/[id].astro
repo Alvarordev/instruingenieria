@@ -1,0 +1,25 @@
+---
+import BrandForm from "../../../components/svelte/BrandForm.svelte";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { apiJson } from "../../../lib/api";
+
+interface Brand {
+  id: number;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+}
+
+const { id } = Astro.params;
+const brands = (await apiJson<Brand[]>("/api/brands")) ?? [];
+const brand = brands.find((b) => b.id === Number(id));
+
+if (!brand) {
+  return Astro.redirect("/admin/marcas");
+}
+---
+
+<AdminLayout title="Editar marca">
+  <h1 class="mb-6 text-2xl font-semibold text-brand-purple">Editar marca</h1>
+  <BrandForm client:load brand={brand} />
+</AdminLayout>
