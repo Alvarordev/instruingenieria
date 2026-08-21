@@ -1,0 +1,19 @@
+{
+  "name": "@instru/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "start": "HOST=0.0.0.0 bun ./dist/server/entry.mjs",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/node": "^11.1.4",
+    "@astrojs/svelte": "^9.0.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.2.4",
+    "svelte": "^5.56.10",
+    "tailwindcss": "^4.3.3"
+  }
+}

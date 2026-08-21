@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Roboto", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Orbitron", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-purple: #4a3abe;
+  --color-brand-red: #ff0000;
+  --color-brand-blue: #0092fa;
+
+  --radius-card: 25px;
+  --radius-pill: 20px;
+
+  --container-page: 1440px;
+}
+
+@utility container-page {
+  max-width: var(--container-page);
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: #1a1a1a;
+}

@@ -1,0 +1,45 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DATABASE_URL=/data/db.sqlite
+      - UPLOADS_DIR=/data/uploads
+      - SESSION_COOKIE_NAME=${SESSION_COOKIE_NAME}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    volumes:
+      - instru_data:/data
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - API_URL=http://api:4000
+    depends_on:
+      - api
+
+  # Reproduce localmente el ruteo por path que Dokploy hace en producción
+  # (web en /, api en /api y /uploads del mismo dominio) — sin esto, el
+  # navegador no puede llegar a /api ni /uploads del contenedor `web`.
+  proxy:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - web
+      - api
+    ports:
+      - "3000:3000"
+
+volumes:
+  instru_data:
