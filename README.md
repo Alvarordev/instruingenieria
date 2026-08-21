@@ -31,13 +31,13 @@ Login del CRM: `http://localhost:3000/admin/login`
 docker compose up --build
 ```
 
-Levanta dos servicios (`web`, `api`) con un volumen (`instru_data`) para `db.sqlite` y `uploads/`. En Dokploy: una app tipo "Compose" apuntando a este repo, con reglas de dominio por servicio — `web` en `/`, `api` en `/api` y `/uploads` del mismo dominio (sin subdominio, sin CORS).
+Levanta tres servicios: `web`, `api`, y `proxy` (nginx, ver `nginx.conf`) con un volumen (`instru_data`) para `db.sqlite` y `uploads/`. `proxy` enruta por path sobre un mismo origen — `web` en `/`, `api` en `/api` y `/uploads` — porque el navegador necesita llegar a las tres cosas sin CORS y Dokploy no resuelve ese ruteo por sí solo entre servicios de un mismo compose (cada servicio queda con su propio dominio autogenerado si no se configura nada extra). En Dokploy: una app tipo "Compose" apuntando a este repo, con la Domain configurada sobre el servicio **`proxy`** (puerto 3000) — no sobre `web` directamente.
 
 ### CI/CD
 
 Cada push a `main` dispara `.github/workflows/deploy.yml`: arma las imágenes `Dockerfile.api`/`Dockerfile.web` y las sube a GHCR (`ghcr.io/alvarordev/instruingenieria-api` y `-web`, tags `latest` y el SHA del commit), y al terminar pega al webhook de redeploy de Dokploy. Como el repo es público, los paquetes de GHCR quedan públicos también — Dokploy no necesita credenciales de registry para pullearlos.
 
-Dokploy debe apuntar a `docker-compose.prod.yml` (no a `docker-compose.yml`, que sigue siendo solo para desarrollo local con `docker compose up --build`) — ese archivo referencia las imágenes de GHCR en vez de buildear desde el código, y no incluye el servicio `proxy`, porque ese ruteo en producción ya lo hace el propio proxy de Dokploy vía las reglas de dominio por servicio.
+Dokploy debe apuntar a `docker-compose.prod.yml` (no a `docker-compose.yml`, que sigue siendo solo para desarrollo local con `docker compose up --build`) — ese archivo referencia las imágenes de GHCR en vez de buildear desde el código, pero mantiene el mismo servicio `proxy` que el compose local, por el motivo explicado arriba.
 
 Falta cargar el secret `DOKPLOY_WEBHOOK_URL` en el repo de GitHub (Settings → Secrets and variables → Actions) con la URL de webhook de la app en Dokploy.
 
