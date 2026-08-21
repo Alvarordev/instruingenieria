@@ -1,0 +1,27 @@
+services:
+  api:
+    image: ghcr.io/alvarordev/instruingenieria-api:latest
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DATABASE_URL=/data/db.sqlite
+      - UPLOADS_DIR=/data/uploads
+      - SESSION_COOKIE_NAME=${SESSION_COOKIE_NAME}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    volumes:
+      - instru_data:/data
+
+  web:
+    image: ghcr.io/alvarordev/instruingenieria-web:latest
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - API_URL=http://api:4000
+    depends_on:
+      - api
+
+volumes:
+  instru_data:

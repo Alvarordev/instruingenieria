@@ -33,6 +33,14 @@ docker compose up --build
 
 Levanta dos servicios (`web`, `api`) con un volumen (`instru_data`) para `db.sqlite` y `uploads/`. En Dokploy: una app tipo "Compose" apuntando a este repo, con reglas de dominio por servicio — `web` en `/`, `api` en `/api` y `/uploads` del mismo dominio (sin subdominio, sin CORS).
 
+### CI/CD
+
+Cada push a `main` dispara `.github/workflows/deploy.yml`: arma las imágenes `Dockerfile.api`/`Dockerfile.web` y las sube a GHCR (`ghcr.io/alvarordev/instruingenieria-api` y `-web`, tags `latest` y el SHA del commit), y al terminar pega al webhook de redeploy de Dokploy. Como el repo es público, los paquetes de GHCR quedan públicos también — Dokploy no necesita credenciales de registry para pullearlos.
+
+Dokploy debe apuntar a `docker-compose.prod.yml` (no a `docker-compose.yml`, que sigue siendo solo para desarrollo local con `docker compose up --build`) — ese archivo referencia las imágenes de GHCR en vez de buildear desde el código, y no incluye el servicio `proxy`, porque ese ruteo en producción ya lo hace el propio proxy de Dokploy vía las reglas de dominio por servicio.
+
+Falta cargar el secret `DOKPLOY_WEBHOOK_URL` en el repo de GitHub (Settings → Secrets and variables → Actions) con la URL de webhook de la app en Dokploy.
+
 ## Alcance de esta primera pasada
 
 Quedaron implementados como ejemplo completo del patrón: la home, el listado y detalle de `productos`, el login, y el CRUD admin de `productos`. El resto de páginas públicas (`nosotros`, `metrologia/*`, `servicios/*`, `alquiler`, `proyectos`, `contactos`) y CRUD admin (`categorias`, `marcas`, `servicios`) siguen el mismo patrón y quedan como siguiente pase.
