@@ -1,0 +1,171 @@
+---
+import ProductGrid from "../../components/astro/ProductGrid.astro";
+import Button from "../../components/astro/ui/Button.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { apiJson } from "../../lib/api";
+
+interface Product {
+  id: number;
+  slug: string;
+  name: string;
+  description: string | null;
+  categoryId: number;
+  brandId: number | null;
+  type: "venta" | "alquiler";
+  imageUrl: string | null;
+  tagline: string | null;
+  specs: string[] | null;
+  applications: string[] | null;
+  fichaTecnicaUrl: string | null;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  parentId: number | null;
+}
+
+interface Brand {
+  id: number;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+}
+
+const WHATSAPP_NUMBER = "51949262786";
+
+const { slug } = Astro.params;
+const product = await apiJson<Product>(`/api/products/${slug}`);
+
+if (!product) {
+  return Astro.redirect("/productos");
+}
+
+const categories = (await apiJson<Category[]>("/api/categories")) ?? [];
+const category = categories.find((c) => c.id === product.categoryId);
+const tipo = category?.parentId ? categories.find((c) => c.id === category.parentId) : category;
+const tipoLabel = tipo?.name ?? "";
+
+// Hojas hermanas dentro del mismo tipo (para relacionados y marcas usadas)
+const siblingLeafIds = category?.parentId
+  ? categories.filter((c) => c.parentId === category.parentId).map((c) => c.id)
+  : category
+    ? [category.id]
+    : [];
+
+const relatedProducts = (
+  (await apiJson<Product[]>(`/api/products?category=${product.categoryId}&type=${product.type}`)) ?? []
+)
+  .filter((p) => p.slug !== product.slug)
+  .slice(0, 4);
+
+const allBrands = (await apiJson<Brand[]>("/api/brands")) ?? [];
+const brandsUsed = siblingLeafIds.length
+  ? Array.from(
+      new Set(
+        ((await apiJson<Product[]>(`/api/products?category=${siblingLeafIds.join(",")}`)) ?? [])
+          .map((p) => p.brandId)
+          .filter((id): id is number => id !== null),
+      ),
+    )
+      .map((id) => allBrands.find((b) => b.id === id))
+      .filter((b): b is Brand => b !== undefined)
+  : [];
+
+const whatsappText = encodeURIComponent(`Hola, quiero cotizar el producto: ${product.name}`);
+---
+
+<BaseLayout title={product.name} description={product.description ?? undefined}>
+  <section class="container-page flex flex-col gap-10 py-16">
+    <div class="grid gap-8 md:grid-cols-[385px_1fr]">
+      <div class="flex items-center justify-center rounded-card bg-gray-100 p-6">
+        {
+          product.imageUrl ? (
+            <img src={product.imageUrl} alt={product.name} class="max-h-[400px] w-full object-contain" />
+          ) : (
+            <div class="h-[400px] w-full rounded-md bg-gray-200" aria-hidden="true" />
+          )
+        }
+      </div>
+
+      <div class="flex flex-col items-start gap-3">
+        {tipoLabel && <p class="text-lg capitalize text-black/60">{tipoLabel}</p>}
+        <h1 class="font-display text-3xl font-black uppercase text-brand-blue md:text-4xl">{product.name}</h1>
+        {product.tagline && <p class="text-xl font-bold text-brand-purple">{product.tagline}</p>}
+        {
+          product.specs && product.specs.length > 0 && (
+            <ul class="list-disc space-y-1 pl-5 text-[17px] leading-relaxed text-[#4e4e4e]">
+              {product.specs.map((spec) => (
+                <li>{spec}</li>
+              ))}
+            </ul>
+          )
+        }
+        <div class="mt-2 flex flex-wrap gap-4">
+          {
+            product.fichaTecnicaUrl && (
+              <Button href={product.fichaTecnicaUrl} variant="secondary">
+                Ficha técnica
+              </Button>
+            )
+          }
+          <Button href={`https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappText}`} variant="secondary">
+            Cotizar en WhatsApp
+          </Button>
+        </div>
+      </div>
+    </div>
+
+    {
+      (product.description || (product.applications && product.applications.length > 0)) && (
+        <div class="rounded-card border border-black/10 bg-white p-8 shadow-sm md:p-10">
+          {product.description && (
+            <>
+              <h2 class="mb-3 text-2xl font-semibold capitalize text-brand-purple">Descripción:</h2>
+              <p class="mb-6 text-[15px] leading-relaxed text-[#4e4e4e]">{product.description}</p>
+            </>
+          )}
+          {product.applications && product.applications.length > 0 && (
+            <>
+              <h2 class="mb-3 text-xl font-semibold text-brand-purple">Aplicaciones:</h2>
+              <ul class="list-disc space-y-1 pl-5 text-[15px] leading-relaxed text-[#4e4e4e]">
+                {product.applications.map((application) => (
+                  <li>{application}</li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      )
+    }
+  </section>
+
+  {
+    relatedProducts.length > 0 && (
+      <section class="container-page flex flex-col gap-8 pb-16">
+        <h2 class="font-display text-center text-2xl font-bold uppercase text-brand-purple md:text-3xl">
+          Productos relacionados
+        </h2>
+        <ProductGrid products={relatedProducts} />
+      </section>
+    )
+  }
+
+  {
+    brandsUsed.length > 0 && (
+      <section class="container-page flex flex-col items-center gap-6 pb-16 text-center">
+        <h2 class="text-2xl font-semibold uppercase text-brand-purple">Marcas que usamos</h2>
+        <div class="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+          {brandsUsed.map((brand) =>
+            brand.logoUrl ? (
+              <img src={brand.logoUrl} alt={brand.name} class="h-10 w-auto object-contain" loading="lazy" />
+            ) : (
+              <span class="text-lg font-semibold text-black/70">{brand.name}</span>
+            ),
+          )}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>

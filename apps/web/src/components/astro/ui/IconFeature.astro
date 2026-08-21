@@ -1,0 +1,20 @@
+---
+interface Props {
+  icon: string;
+  class?: string;
+}
+
+const { icon, class: className = "" } = Astro.props;
+---
+
+<div
+  class:list={[
+    "flex aspect-square w-full max-w-[264px] flex-col items-center justify-center gap-4 rounded-card border-4 border-brand-purple p-6 text-center",
+    className,
+  ]}
+>
+  <img src={icon} alt="" class="h-[70px] w-[70px] object-contain" loading="lazy" />
+  <p class="text-lg font-medium uppercase leading-tight text-black">
+    <slot />
+  </p>
+</div>

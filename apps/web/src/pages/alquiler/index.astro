@@ -1,0 +1,71 @@
+---
+import Button from "../../components/astro/ui/Button.astro";
+import SectionHeading from "../../components/astro/ui/SectionHeading.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { apiJson } from "../../lib/api";
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  parentId: number | null;
+}
+
+const allCategories = (await apiJson<Category[]>("/api/categories")) ?? [];
+
+const tipos = [
+  {
+    slug: "equipos-electricos",
+    titulo: "Equipos Eléctricos",
+    blurb:
+      "Megóhmetros, telurímetros, multímetros y pinzas amperimétricas para instalaciones y mantenimiento eléctrico.",
+  },
+  {
+    slug: "instrumentacion",
+    titulo: "Instrumentación",
+    blurb: "Calibradores de procesos, hornos de calibración y equipos para instrumentación industrial.",
+  },
+  {
+    slug: "monitoreo-ambiental-y-ocupacional",
+    titulo: "Monitoreo Ambiental y Ocupacional",
+    blurb: "Sonómetros, luxómetros y equipos de monitoreo de gases para higiene industrial y salud ocupacional.",
+  },
+  {
+    slug: "mantenimiento-e-inspeccion-industrial",
+    titulo: "Mantenimiento e Inspección Industrial",
+    blurb: "Cámaras termográficas, equipos de análisis de vibraciones e inspección visual industrial.",
+  },
+]
+  .map((tipo) => {
+    const category = allCategories.find((c) => c.slug === tipo.slug && c.parentId === null);
+    return category ? { ...tipo, id: category.id } : null;
+  })
+  .filter((tipo): tipo is NonNullable<typeof tipo> => tipo !== null);
+---
+
+<BaseLayout
+  title="Alquiler"
+  description="Alquiler de equipos eléctricos, de instrumentación, monitoreo ambiental y ocupacional, y mantenimiento e inspección industrial."
+>
+  <section class="container-page flex flex-col items-center gap-4 py-16 text-center">
+    <SectionHeading align="center">Alquiler de Equipos</SectionHeading>
+    <p class="max-w-2xl text-base text-black">
+      Explora nuestras soluciones de alquiler diseñadas para todas las necesidades técnicas. Selecciona la
+      categoría que necesitas y accede a nuestro catálogo actualizado con disponibilidad inmediata.
+    </p>
+  </section>
+
+  <section class="container-page flex flex-col gap-6 pb-16">
+    {
+      tipos.map((tipo) => (
+        <div class="flex flex-col items-center justify-center gap-3 rounded-card bg-gradient-to-br from-brand-purple to-brand-blue px-8 py-14 text-center text-white shadow-sm">
+          <h2 class="text-2xl font-bold uppercase md:text-3xl">{tipo.titulo}</h2>
+          <p class="max-w-xl text-sm text-white/85 md:text-base">{tipo.blurb}</p>
+          <Button href={`/alquiler/${tipo.slug}`} variant="secondary" class="mt-2">
+            Ver equipos
+          </Button>
+        </div>
+      ))
+    }
+  </section>
+</BaseLayout>

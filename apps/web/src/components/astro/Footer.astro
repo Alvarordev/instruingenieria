@@ -1,0 +1,67 @@
+---
+const mapQuery = encodeURIComponent("Calle Verbenas 113, Urb. Salamanca, Ate, Lima, Perú");
+---
+
+<footer class="site-footer bg-brand-purple text-white">
+  <div class="container-page grid gap-10 py-12 md:grid-cols-[1fr_1.4fr]">
+    <iframe
+      title="Ubicación de Instruingeniería"
+      src={`https://www.google.com/maps?q=${mapQuery}&output=embed`}
+      class="h-[280px] w-full rounded-card border-0"
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+    ></iframe>
+
+    <div class="grid gap-8 sm:grid-cols-3">
+      <div>
+        <h3 class="mb-3 text-lg font-bold uppercase">Ubicación</h3>
+        <div class="space-y-3 text-sm">
+          <div>
+            <p class="font-semibold">Sede principal: Lima</p>
+            <p class="text-white/80">Calle Verbenas N° 113, Urb. Salamanca - Ate</p>
+          </div>
+          <div>
+            <p class="font-semibold">Sede secundaria: Huancayo</p>
+            <p class="text-white/80">Calle Verbenas N° 113, Urb. Salamanca - Ate</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="mb-3 text-lg font-bold uppercase">Atención</h3>
+        <div class="space-y-3 text-sm">
+          <div>
+            <p class="font-semibold">Lunes a Viernes</p>
+            <p class="text-white/80">08:30 a 18:00h</p>
+          </div>
+          <div>
+            <p class="font-semibold">Sábados</p>
+            <p class="text-white/80">08:30 a 13:00h</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="mb-3 text-lg font-bold uppercase">Contactos</h3>
+        <div class="space-y-3 text-sm">
+          <div>
+            <p class="font-semibold">mayker.ramos@instruingenieria.com</p>
+            <p class="text-white/80">Correo principal</p>
+          </div>
+          <div>
+            <p class="font-semibold">ventas@instruingenieria.com</p>
+            <p class="text-white/80">Correo de ventas</p>
+          </div>
+          <div>
+            <p class="font-semibold">(01) 4076003 / 51 949 262 786</p>
+            <p class="text-white/80">Central Telefónica</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-t border-white/15 bg-black/10 py-3 text-center text-xs">
+    <p>&copy; {new Date().getFullYear()} Instruingeniería S. A. C. Todos los derechos reservados.</p>
+  </div>
+</footer>

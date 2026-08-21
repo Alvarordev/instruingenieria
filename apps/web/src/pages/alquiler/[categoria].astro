@@ -1,0 +1,101 @@
+---
+import ProductGrid from "../../components/astro/ProductGrid.astro";
+import AlquilerFilters from "../../components/svelte/AlquilerFilters.svelte";
+import SectionHeading from "../../components/astro/ui/SectionHeading.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { apiJson } from "../../lib/api";
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  parentId: number | null;
+}
+
+interface Brand {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+interface Product {
+  slug: string;
+  name: string;
+  tagline: string | null;
+  imageUrl: string | null;
+  type: "venta" | "alquiler";
+  categoryId: number;
+}
+
+const { categoria } = Astro.params;
+
+const allCategories = (await apiJson<Category[]>("/api/categories")) ?? [];
+const tipo = allCategories.find((c) => c.slug === categoria && c.parentId === null);
+
+if (!tipo) {
+  return Astro.redirect("/alquiler");
+}
+
+const leaves = allCategories.filter((c) => c.parentId === tipo.id);
+
+const categoryParam = Astro.url.searchParams.get("category");
+const checkedCategoryIds = categoryParam
+  ? categoryParam
+      .split(",")
+      .map(Number)
+      .filter((id) => leaves.some((leaf) => leaf.id === id))
+  : leaves.map((leaf) => leaf.id);
+
+const brandParam = Astro.url.searchParams.get("brand") ?? "";
+const checkedBrandIds = brandParam.split(",").filter(Boolean);
+
+const q = Astro.url.searchParams.get("q") ?? "";
+
+const query = new URLSearchParams({ type: "alquiler" });
+if (checkedCategoryIds.length) query.set("category", checkedCategoryIds.join(","));
+if (checkedBrandIds.length) query.set("brand", checkedBrandIds.join(","));
+if (q) query.set("q", q);
+
+const products = checkedCategoryIds.length ? ((await apiJson<Product[]>(`/api/products?${query}`)) ?? []) : [];
+const brands = (await apiJson<Brand[]>("/api/brands")) ?? [];
+
+const bySubcategory = leaves
+  .map((leaf) => ({ leaf, products: products.filter((p) => p.categoryId === leaf.id) }))
+  .filter((group) => group.products.length > 0);
+---
+
+<BaseLayout title={tipo.name} description={`Alquiler de ${tipo.name.toLowerCase()} — Instruingeniería.`}>
+  <div class="bg-brand-purple py-8 text-center text-white">
+    <h1 class="container-page text-3xl font-bold uppercase md:text-4xl">{tipo.name}</h1>
+  </div>
+
+  <section class="container-page grid gap-8 py-12 lg:grid-cols-[280px_1fr]">
+    <aside>
+      <AlquilerFilters
+        client:visible
+        subcategories={leaves}
+        brands={brands}
+        checkedCategoryIds={checkedCategoryIds}
+        checkedBrandIds={checkedBrandIds}
+        q={q}
+      />
+    </aside>
+
+    <div class="flex flex-col gap-12">
+      {
+        bySubcategory.length === 0 ? (
+          <p class="text-black/60">No se encontraron equipos con los filtros seleccionados.</p>
+        ) : (
+          bySubcategory.map((group) => (
+            <div class="flex flex-col gap-4">
+              <h2 class="rounded-md bg-brand-purple px-4 py-2 text-center text-sm font-bold uppercase text-white md:text-base">
+                {group.leaf.name}
+              </h2>
+              <ProductGrid products={group.products} />
+            </div>
+          ))
+        )
+      }
+    </div>
+  </section>
+</BaseLayout>

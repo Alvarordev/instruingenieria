@@ -1,0 +1,131 @@
+---
+import AcreditacionSection from "../../components/astro/AcreditacionSection.astro";
+import Button from "../../components/astro/ui/Button.astro";
+import SectionHeading from "../../components/astro/ui/SectionHeading.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const pilares = [
+  {
+    nombre: "Misión",
+    texto:
+      "En INSTRUINGENIERÍA S.A.C. calibramos para sostener la calidad de las mediciones que se realizan en la industria y el comercio.",
+  },
+  {
+    nombre: "Visión",
+    texto:
+      "En INSTRUINGENIERÍA S.A.C. queremos ser la primera opción por brindar la mejor calidad y confianza en nuestros servicios.",
+  },
+  {
+    nombre: "Valores",
+    texto: "Precisión, calidad e integridad son los pilares que sostienen nuestra misión y visión.",
+  },
+];
+
+const pilarBullets = [
+  "Generamos resultados que impactan.",
+  "Somos parte de la cadena ininterrumpida de la confianza.",
+  "Trabajamos para asegurar el crecimiento sostenido de nuestros clientes.",
+];
+
+// TODO: próxima pasada — reemplazar por GET /api/services?group=metrologia
+const laboratorios = [
+  {
+    nombre: "Laboratorio de Masa",
+    slug: "masa",
+    texto:
+      "El laboratorio de MASA realiza calibraciones en el orden de los micrómetros. Contamos con diversos patrones como los bloques…",
+  },
+  {
+    nombre: "Laboratorio de Presión",
+    slug: "presion",
+    texto:
+      "El laboratorio de PRESIÓN realiza calibraciones en el orden de los micrómetros. Contamos con diversos patrones como los bloques…",
+  },
+  {
+    nombre: "Laboratorio de Temperatura",
+    slug: "temperatura",
+    texto:
+      "El laboratorio de TEMPERATURA realiza calibraciones en el orden de los micrómetros. Contamos con diversos patrones como los bloques…",
+  },
+  {
+    nombre: "Laboratorio de Longitud y Ángulo",
+    slug: "longitud-y-angulo",
+    texto:
+      "El laboratorio de LONGITUD Y ÁNGULOS realiza calibraciones en el orden de los micrómetros. Contamos con diversos patrones como los bloques…",
+  },
+];
+---
+
+<BaseLayout title="Nosotros" description="Conoce a Instruingeniería S.A.C.: misión, visión, valores y nuestros laboratorios de calibración acreditados por INACAL.">
+  <section class="relative flex h-[420px] items-end overflow-hidden">
+    <img
+      src="/images/nosotros/hero-bg.png"
+      alt="Equipo de Instruingeniería en campo"
+      class="absolute inset-0 h-full w-full object-cover"
+      loading="eager"
+    />
+    <div class="absolute inset-0 bg-black/25"></div>
+    <div class="container-page relative z-10 flex flex-col items-start gap-4 pb-12 text-white">
+      <h1 class="text-4xl font-bold uppercase md:text-[45px]">Instruingeniería</h1>
+      <p class="text-xl font-medium md:text-2xl">Calibración, certificación y mantenimiento industrial en Perú.</p>
+      <Button href="/servicios" variant="primary">Ver servicios</Button>
+    </div>
+  </section>
+
+  <section class="container-page flex flex-col items-center gap-6 py-16 text-center">
+    <SectionHeading align="center">Instruingeniería</SectionHeading>
+    <div class="flex max-w-3xl flex-col gap-4 text-[17px] leading-relaxed text-[#4e4e4e]">
+      <p>
+        Somos INSTRUINGENIERÍA S.A.C., una empresa peruana especializada en la venta, alquiler, calibración,
+        certificación y mantenimiento preventivo de equipos industriales, cumpliendo con los estándares de calidad
+        de la norma ISO 17025.
+      </p>
+      <p>
+        Contamos con un equipo de profesionales altamente capacitados, garantizando soluciones precisas y de alta
+        calidad desde hace más de 7 años.
+      </p>
+      <p>
+        Nuestra misión es ofrecer servicios con precisión y confiabilidad en cada medición, asegurando así la
+        satisfacción y confianza de nuestros clientes.
+      </p>
+    </div>
+  </section>
+
+  <section class="container-page grid gap-6 pb-16 md:grid-cols-3">
+    {
+      pilares.map((pilar) => (
+        <div class="flex flex-col rounded-[20px] border border-black/10 bg-white shadow-[inset_0_0_6px_0_rgba(0,0,0,0.1)]">
+          <h3 class="px-6 pt-6 text-[28px] font-semibold capitalize text-brand-purple">{pilar.nombre}</h3>
+          <p class="mx-6 mt-4 rounded-md bg-brand-purple px-4 py-4 text-center text-sm text-white">{pilar.texto}</p>
+          <ul class="list-disc space-y-2 px-10 py-6 text-sm text-[#4e4e4e]">
+            {pilarBullets.map((bullet) => (
+              <li>{bullet}</li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </section>
+
+  <AcreditacionSection image="/images/nosotros/certificado.png" />
+
+  <section class="container-page flex flex-col gap-8 py-16">
+    <SectionHeading>Laboratorios de calibración</SectionHeading>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        laboratorios.map((lab) => (
+          <div class="flex flex-col overflow-hidden rounded-[20px] border border-black/10 bg-white shadow-[inset_0_0_6px_0_rgba(0,0,0,0.1)]">
+            <div class="h-[143px] w-full bg-gray-300" aria-hidden="true" />
+            <div class="flex flex-1 flex-col gap-3 p-5">
+              <h3 class="text-xl font-semibold capitalize text-brand-purple">{lab.nombre}</h3>
+              <p class="flex-1 text-xs leading-relaxed text-[#4e4e4e]">{lab.texto}</p>
+              <Button href={`/metrologia/${lab.slug}`} variant="secondary" class="self-start px-6 py-2 text-xs">
+                Ver más
+              </Button>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>

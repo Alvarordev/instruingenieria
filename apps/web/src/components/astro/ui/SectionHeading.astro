@@ -1,0 +1,16 @@
+---
+interface Props {
+  align?: "left" | "center";
+  tone?: "purple" | "white";
+  class?: string;
+}
+
+const { align = "left", tone = "purple", class: className = "" } = Astro.props;
+
+const alignClass = align === "center" ? "text-center" : "text-left";
+const toneClass = tone === "white" ? "text-white" : "text-brand-purple";
+---
+
+<h2 class:list={["font-semibold uppercase text-3xl md:text-[35px]", alignClass, toneClass, className]}>
+  <slot />
+</h2>

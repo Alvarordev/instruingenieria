@@ -1,0 +1,36 @@
+---
+import ProductGrid from "../../components/astro/ProductGrid.astro";
+import ProductFilters from "../../components/svelte/ProductFilters.svelte";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { apiJson } from "../../lib/api";
+
+interface Product {
+  id: number;
+  slug: string;
+  name: string;
+  tagline: string | null;
+  imageUrl: string | null;
+  type: "venta" | "alquiler";
+}
+
+const category = Astro.url.searchParams.get("category") ?? "";
+const brand = Astro.url.searchParams.get("brand") ?? "";
+const type = Astro.url.searchParams.get("type") ?? "";
+
+const query = new URLSearchParams();
+if (category) query.set("category", category);
+if (brand) query.set("brand", brand);
+if (type) query.set("type", type);
+
+const products = (await apiJson<Product[]>(`/api/products?${query}`)) ?? [];
+const categories = (await apiJson<{ id: number; name: string }[]>("/api/categories")) ?? [];
+const brands = (await apiJson<{ id: number; name: string }[]>("/api/brands")) ?? [];
+---
+
+<BaseLayout title="Productos">
+  <div class="container-page flex flex-col gap-8 py-12">
+    <h1 class="text-3xl font-semibold uppercase text-brand-purple">Productos</h1>
+    <ProductFilters client:visible categories={categories} brands={brands} />
+    <ProductGrid products={products} />
+  </div>
+</BaseLayout>

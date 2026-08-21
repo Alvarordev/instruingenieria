@@ -1,0 +1,81 @@
+---
+import TopBar from "./TopBar.astro";
+
+const links = [
+  { href: "/", label: "Inicio" },
+  { href: "/nosotros", label: "Nosotros" },
+  { href: "/productos", label: "Productos" },
+  { href: "/metrologia", label: "Metrología" },
+  { href: "/servicios", label: "Servicios" },
+  { href: "/alquiler", label: "Alquiler" },
+  { href: "/proyectos", label: "Proyectos" },
+  { href: "/contactos", label: "Contacto" },
+];
+
+const contactItems = [
+  {
+    icon: "/images/shared/icon-location.png",
+    title: "Sede Principal: LIMA",
+    detail: "Calle Verbenas N° 113, Urb. Salamanca - Ate",
+  },
+  {
+    icon: "/images/shared/icon-mail.png",
+    title: "ventas@instruingenieria.com",
+    detail: "Correo de ventas",
+  },
+  {
+    icon: "/images/shared/icon-phone.png",
+    title: "(01) 4076003 / 51 949 262 786",
+    detail: "Central de Telefónica",
+  },
+];
+---
+
+<header class="site-header sticky top-0 z-50">
+  <TopBar />
+
+  <div class="border-b border-black/5 bg-white py-2">
+    <div class="container-page flex flex-wrap items-center justify-center gap-x-10 gap-y-2 md:justify-between">
+      {
+        contactItems.map((item) => (
+          <div class="flex items-center gap-2">
+            <img src={item.icon} alt="" class="h-6 w-6 shrink-0 object-contain" />
+            <div class="leading-tight">
+              <p class="text-sm font-semibold text-black">{item.title}</p>
+              <p class="text-xs text-black/60">{item.detail}</p>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="bg-white shadow-[0_4px_4px_0_rgba(0,0,0,0.15)]">
+    <div class="container-page flex flex-wrap items-center justify-between gap-4 py-3">
+      <a href="/" class="logo shrink-0">
+        <img src="/images/shared/logo.png" alt="Instruingeniería · Ingeniería &amp; Laboratorio" class="h-10 w-auto" />
+      </a>
+
+      <nav class="flex flex-wrap items-center gap-x-6 gap-y-2">
+        {
+          links.map((link) => (
+            <a href={link.href} class="text-sm font-medium uppercase text-black hover:text-brand-purple">
+              {link.label}
+            </a>
+          ))
+        }
+      </nav>
+
+      <label class="flex items-center gap-2 rounded-pill border-2 border-brand-blue px-4 py-2">
+        <span class="sr-only">Buscar</span>
+        <input
+          type="search"
+          name="q"
+          placeholder="Buscar"
+          class="w-32 border-none bg-transparent text-sm outline-none placeholder:text-black/40 md:w-44"
+        />
+        <img src="/images/shared/icon-search.svg" alt="" class="h-4 w-4 shrink-0" />
+      </label>
+    </div>
+  </div>
+</header>

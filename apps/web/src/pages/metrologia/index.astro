@@ -1,0 +1,43 @@
+---
+import LabCard from "../../components/astro/LabCard.astro";
+import SectionHeading from "../../components/astro/ui/SectionHeading.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { apiJson } from "../../lib/api";
+
+interface Lab {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+}
+
+const labs = (await apiJson<Lab[]>("/api/services?group=metrologia")) ?? [];
+---
+
+<BaseLayout
+  title="Metrología"
+  description="Laboratorios de calibración de Instruingeniería, acreditados por INACAL bajo la norma ISO/IEC 17025."
+>
+  <section class="relative flex h-[420px] items-end overflow-hidden">
+    <img
+      src="/images/nosotros/hero-bg.png"
+      alt="Laboratorio de calibración de Instruingeniería"
+      class="absolute inset-0 h-full w-full object-cover"
+      loading="eager"
+    />
+    <div class="absolute inset-0 bg-black/25"></div>
+    <div class="container-page relative z-10 flex flex-col items-start gap-4 pb-12 text-white">
+      <h1 class="text-4xl font-bold uppercase md:text-[45px]">Laboratorios de Calibración</h1>
+      <p class="text-xl font-medium md:text-2xl">
+        Acreditados por el organismo de acreditación INACAL- DA con registro N° LC – 016.
+      </p>
+    </div>
+  </section>
+
+  <section class="container-page flex flex-col gap-8 py-16">
+    <SectionHeading align="center">Nuestros laboratorios</SectionHeading>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {labs.map((lab) => <LabCard name={lab.name} slug={lab.slug} description={lab.description} />)}
+    </div>
+  </section>
+</BaseLayout>
