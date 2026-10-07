@@ -1,0 +1,162 @@
+---
+import ContactForm from "../../components/svelte/ContactForm.svelte";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import {
+  CONTACT_EMAIL_MAIN,
+  CONTACT_EMAIL_SALES,
+  HUANCAYO_ADDRESS,
+  HUANCAYO_MAP_QUERY,
+  LIMA_ADDRESS,
+  LIMA_MAP_QUERY,
+  mapsEmbedUrl,
+} from "../../lib/contact";
+
+const sedes = [
+  {
+    title: "SEDE LIMA",
+    address: LIMA_ADDRESS,
+    mapQuery: LIMA_MAP_QUERY,
+  },
+  {
+    title: "SEDE HUANCAYO",
+    address: HUANCAYO_ADDRESS,
+    mapQuery: HUANCAYO_MAP_QUERY,
+  },
+];
+---
+
+<BaseLayout
+  title="Contacto"
+  description="Contacta a Instruingeniería S.A.C. en Lima y Huancayo: sedes, teléfonos, correo y formulario de consulta."
+  showFooterMap={false}
+>
+  <section class="container-page py-10 md:py-12">
+    <h1 class="mb-8 text-3xl font-semibold uppercase text-brand-purple md:text-[35px]">Contacto</h1>
+
+    <div class="grid items-stretch gap-6 md:grid-cols-2 md:gap-8">
+      <article class="h-full rounded-[20px] border border-[#d9d9d9] px-6 py-7 md:px-10 md:py-8">
+        <div class="flex flex-col gap-6">
+          <div>
+            <div class="mb-3 flex items-center gap-2">
+              <img src="/images/shared/icon-location.png" alt="" width="27" height="27" class="h-7 w-7 object-contain" />
+              <h3 class="text-lg font-semibold text-brand-purple">Sedes:</h3>
+            </div>
+            <dl class="space-y-3 pl-9 text-sm leading-snug text-[#4e4e4e]">
+              <div>
+                <dt class="font-semibold text-black">Principal Lima:</dt>
+                <dd>{LIMA_ADDRESS}</dd>
+              </div>
+              <div>
+                <dt class="font-semibold text-black">Secundaria Huancayo:</dt>
+                <dd>{HUANCAYO_ADDRESS}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div>
+            <div class="mb-3 flex items-center gap-2">
+              <img src="/images/shared/icon-phone.png" alt="" width="29" height="29" class="h-7 w-7 object-contain" />
+              <h3 class="text-lg font-semibold text-brand-purple">Teléfonos de contacto:</h3>
+            </div>
+            <dl class="space-y-2 pl-9 text-sm leading-snug text-[#4e4e4e]">
+              <div>
+                <dt class="inline font-semibold text-black">Principal:</dt>
+                <dd class="inline"> (01) 4076003 / 51 949 262 786</dd>
+              </div>
+              <div>
+                <dt class="inline font-semibold text-black">Central:</dt>
+                <dd class="inline"> 988 621 211 / (01) 2786280</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div>
+            <div class="mb-3 flex items-center gap-2">
+              <img src="/images/shared/icon-mail.png" alt="" width="34" height="34" class="h-8 w-8 object-contain" />
+              <h3 class="text-lg font-semibold text-brand-purple">Email:</h3>
+            </div>
+            <dl class="space-y-2 pl-9 text-sm leading-snug text-[#4e4e4e]">
+              <div>
+                <dt class="inline font-semibold text-black">Principal:</dt>
+                <dd class="inline">
+                  <a class="hover:underline" href={`mailto:${CONTACT_EMAIL_MAIN}`}>{CONTACT_EMAIL_MAIN}</a>
+                </dd>
+              </div>
+              <div>
+                <dt class="inline font-semibold text-black">Ventas:</dt>
+                <dd class="inline">
+                  <a class="hover:underline" href={`mailto:${CONTACT_EMAIL_SALES}`}>{CONTACT_EMAIL_SALES}</a>
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <div>
+            <div class="mb-3 flex items-center gap-2">
+              <img src="/images/shared/icon-clock.svg" alt="" width="29" height="29" class="h-7 w-7 object-contain" />
+              <h3 class="text-lg font-semibold text-brand-purple">Horario de atención:</h3>
+            </div>
+            <div class="flex gap-10 pl-9 text-sm text-[#4e4e4e]">
+              <div>
+                <p class="font-semibold text-black">Lunes a Viernes</p>
+                <p>08:30 a 18:00h</p>
+              </div>
+              <div>
+                <p class="font-semibold text-black">Sábados</p>
+                <p>08:30 a 13:00h</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="h-full rounded-[20px] border border-[#d9d9d9] px-6 py-7 md:px-10 md:py-8">
+        <h3 class="text-lg font-semibold text-brand-purple">Formulario</h3>
+        <p class="mb-4 mt-1 text-sm text-[#4e4e4e]">{LIMA_ADDRESS}</p>
+        <ContactForm client:load />
+      </article>
+    </div>
+  </section>
+
+  <section class="pb-0" aria-label="Ubicación de sedes">
+    <div class="container-page grid gap-10 pb-6 md:grid-cols-2 md:gap-8 md:pb-8">
+      {
+        sedes.map((sede) => (
+          <div class="flex flex-col items-center text-center">
+            <img src="/images/shared/icon-location.png" alt="" width="51" height="51" class="mb-2 h-12 w-12 object-contain" />
+            <h3 class="text-[28px] font-semibold uppercase leading-none text-black md:text-[35px]">{sede.title}</h3>
+            <p class="mt-2 text-xs text-[#4e4e4e]">{sede.address}</p>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="grid border-[3px] border-brand-blue md:grid-cols-2">
+      {
+        sedes.map((sede) => (
+          <div class="contact-map relative overflow-hidden">
+            <iframe
+              title={`Mapa ${sede.title}`}
+              src={mapsEmbedUrl(sede.mapQuery)}
+              class="absolute inset-0 h-full w-full border-0"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .contact-map {
+    height: 260px;
+  }
+
+  @media (min-width: 768px) {
+    .contact-map {
+      height: 435px;
+    }
+  }
+</style>

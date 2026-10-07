@@ -1,21 +1,49 @@
 ---
-const mapQuery = encodeURIComponent("Calle Verbenas 113, Urb. Salamanca, Ate, Lima, Perú");
+import {
+  CONTACT_EMAIL_MAIN,
+  CONTACT_EMAIL_SALES,
+  HUANCAYO_ADDRESS,
+  LIMA_ADDRESS,
+  LIMA_MAP_QUERY,
+  mapsEmbedUrl,
+} from "../../lib/contact";
+
+interface Props {
+  showMap?: boolean;
+}
+
+const { showMap = true } = Astro.props;
 const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer bg-brand-purple text-white">
-  <div class="grid md:grid-cols-[minmax(12rem,34%)_1fr] xl:grid-cols-[minmax(16rem,46.6%)_1fr]">
-    <div class="relative h-[240px] w-full overflow-hidden md:h-full md:min-h-[314px]">
-      <iframe
-        title="Ubicación de Instruingeniería"
-        src={`https://www.google.com/maps?q=${mapQuery}&output=embed`}
-        class="absolute inset-0 h-full w-full border-0"
-        loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade"
-      ></iframe>
-    </div>
+  <div
+    class:list={[
+      showMap && "grid md:grid-cols-[minmax(12rem,34%)_1fr] xl:grid-cols-[minmax(16rem,46.6%)_1fr]",
+    ]}
+  >
+    {
+      showMap && (
+        <div class="relative h-[240px] w-full overflow-hidden md:h-full md:min-h-[314px]">
+          <iframe
+            title="Ubicación de Instruingeniería"
+            src={mapsEmbedUrl(LIMA_MAP_QUERY)}
+            class="absolute inset-0 h-full w-full border-0"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          />
+        </div>
+      )
+    }
 
-    <div class="grid min-w-0 gap-8 px-6 py-5 sm:grid-cols-2 sm:gap-x-6 lg:px-10 lg:py-[21px] xl:gap-x-10">
+    <div
+      class:list={[
+        "grid min-w-0 gap-8",
+        showMap
+          ? "px-6 py-5 sm:grid-cols-2 sm:gap-x-6 lg:px-10 lg:py-[21px] xl:gap-x-10"
+          : "container-page grid-cols-1 py-10 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.6fr] lg:gap-x-10 lg:py-[28px]",
+      ]}
+    >
       <div class="flex flex-col gap-6">
         <div>
           <h3 class="mb-3 text-[20px] font-bold uppercase leading-none">Ubicación</h3>
@@ -24,67 +52,93 @@ const year = new Date().getFullYear();
               <img src="/images/shared/icon-location-white.png" alt="" class="mt-0.5 size-[26px] shrink-0 object-contain" />
               <div>
                 <p class="text-[14px] font-semibold leading-tight">Sede principal: Lima</p>
-                <p class="text-[12px] leading-tight">Calle Verbenas N° 113, Urb. Salamanca - Ate</p>
+                <p class="text-[12px] leading-tight">{LIMA_ADDRESS}</p>
               </div>
             </div>
             <div class="flex items-start gap-2">
               <img src="/images/shared/icon-location-white.png" alt="" class="mt-0.5 size-[26px] shrink-0 object-contain" />
               <div>
                 <p class="text-[14px] font-semibold leading-tight">Sede secundaria: Huancayo</p>
-                <p class="text-[12px] leading-tight">Calle Verbenas N° 113, Urb. Salamanca - Ate</p>
+                <p class="text-[12px] leading-tight">{HUANCAYO_ADDRESS}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div>
-          <h3 class="mb-2 text-[20px] font-bold uppercase leading-none">Atención</h3>
-          <div class="flex gap-8">
+        {
+          showMap && (
             <div>
-              <p class="text-[14px] font-semibold">Lunes a Viernes</p>
-              <p class="text-[12px]">08:30 a 18:00h</p>
+              <h3 class="mb-2 text-[20px] font-bold uppercase leading-none">Atención</h3>
+              <div class="flex gap-8">
+                <div>
+                  <p class="text-[14px] font-semibold">Lunes a Viernes</p>
+                  <p class="text-[12px]">08:30 a 18:00h</p>
+                </div>
+                <div>
+                  <p class="text-[14px] font-semibold">Sábados</p>
+                  <p class="text-[12px]">08:30 a 13:00h</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p class="text-[14px] font-semibold">Sábados</p>
-              <p class="text-[12px]">08:30 a 13:00h</p>
-            </div>
-          </div>
-        </div>
+          )
+        }
       </div>
 
-      <div>
+      {
+        !showMap && (
+          <div>
+            <h3 class="mb-2 text-[20px] font-bold uppercase leading-none">Atención</h3>
+            <div class="flex gap-8">
+              <div>
+                <p class="text-[14px] font-semibold">Lunes a Viernes</p>
+                <p class="text-[12px]">08:30 a 18:00h</p>
+              </div>
+              <div>
+                <p class="text-[14px] font-semibold">Sábados</p>
+                <p class="text-[12px]">08:30 a 13:00h</p>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      <div class:list={[!showMap && "sm:col-span-2 lg:col-span-1"]}>
         <h3 class="mb-3 text-[20px] font-bold uppercase leading-none">Contactos</h3>
-        <div class="flex flex-col gap-4">
-          <div class="flex items-start gap-2">
-            <img src="/images/shared/icon-mail-white.png" alt="" class="size-[34px] shrink-0 object-contain" />
-            <div>
-              <a href="mailto:mayker.ramos@instruingenieria.com" class="break-all text-[14px] font-semibold leading-tight hover:underline">
-                mayker.ramos@instruingenieria.com
-              </a>
-              <p class="text-[12px] leading-tight">Correo principal</p>
+        <div class:list={["flex flex-col gap-4", !showMap && "sm:grid sm:grid-cols-2 sm:gap-x-6"]}>
+          <div class="flex flex-col gap-4">
+            <div class="flex items-start gap-2">
+              <img src="/images/shared/icon-mail-white.png" alt="" class="size-[34px] shrink-0 object-contain" />
+              <div>
+                <a href={`mailto:${CONTACT_EMAIL_MAIN}`} class="break-all text-[14px] font-semibold leading-tight hover:underline">
+                  {CONTACT_EMAIL_MAIN}
+                </a>
+                <p class="text-[12px] leading-tight">Correo principal</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2">
+              <img src="/images/shared/icon-mail-white.png" alt="" class="size-[34px] shrink-0 object-contain" />
+              <div>
+                <a href={`mailto:${CONTACT_EMAIL_SALES}`} class="break-all text-[14px] font-semibold leading-tight hover:underline">
+                  {CONTACT_EMAIL_SALES}
+                </a>
+                <p class="text-[12px] leading-tight">Correo de ventas</p>
+              </div>
             </div>
           </div>
-          <div class="flex items-start gap-2">
-            <img src="/images/shared/icon-mail-white.png" alt="" class="size-[34px] shrink-0 object-contain" />
-            <div>
-              <a href="mailto:ventas@instruingenieria.com" class="break-all text-[14px] font-semibold leading-tight hover:underline">
-                ventas@instruingenieria.com
-              </a>
-              <p class="text-[12px] leading-tight">Correo de ventas</p>
+          <div class="flex flex-col gap-4">
+            <div class="flex items-start gap-2">
+              <img src="/images/shared/icon-phone-white.png" alt="" class="size-[29px] shrink-0 object-contain" />
+              <div>
+                <p class="text-[14px] font-semibold leading-tight">(01) 4076003 / 51 949 262 786</p>
+                <p class="text-[12px] leading-tight">Central de Telefónica</p>
+              </div>
             </div>
-          </div>
-          <div class="flex items-start gap-2">
-            <img src="/images/shared/icon-phone-white.png" alt="" class="size-[29px] shrink-0 object-contain" />
-            <div>
-              <p class="text-[14px] font-semibold leading-tight">(01) 4076003 / 51 949 262 786</p>
-              <p class="text-[12px] leading-tight">Central de Telefónica</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-2">
-            <img src="/images/shared/icon-phone-white.png" alt="" class="size-[29px] shrink-0 object-contain" />
-            <div>
-              <p class="text-[14px] font-semibold leading-tight">988 621 211 / (01) 2786280</p>
-              <p class="text-[12px] leading-tight">Central de Telefónica</p>
+            <div class="flex items-start gap-2">
+              <img src="/images/shared/icon-phone-white.png" alt="" class="size-[29px] shrink-0 object-contain" />
+              <div>
+                <p class="text-[14px] font-semibold leading-tight">988 621 211 / (01) 2786280</p>
+                <p class="text-[12px] leading-tight">Central de Telefónica</p>
+              </div>
             </div>
           </div>
         </div>

@@ -7,11 +7,13 @@ import "../styles/global.css";
 interface Props {
   title: string;
   description?: string;
+  showFooterMap?: boolean;
 }
 
 const {
   title,
   description = "Instruingeniería S.A.C. — venta, alquiler, calibración, certificación y mantenimiento preventivo de equipos industriales.",
+  showFooterMap = true,
 } = Astro.props;
 ---
 
@@ -35,7 +37,7 @@ const {
     <main>
       <slot />
     </main>
-    <Footer />
+    <Footer showMap={showFooterMap} />
     <CartDrawer client:load />
   </body>
 </html>
