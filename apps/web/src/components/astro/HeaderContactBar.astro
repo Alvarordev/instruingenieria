@@ -1,0 +1,35 @@
+---
+const contactItems = [
+  {
+    icon: "/images/shared/icon-location.png",
+    title: "Sede Principal: LIMA",
+    detail: "Calle Verbenas N° 113, Urb. Salamanca - Ate",
+  },
+  {
+    icon: "/images/shared/icon-mail.png",
+    title: "ventas@instruingenieria.com",
+    detail: "Correo de ventas",
+  },
+  {
+    icon: "/images/shared/icon-phone.png",
+    title: "(01) 4076003 / 51 949 262 786",
+    detail: "Central de Telefónica",
+  },
+];
+---
+
+<div class="border-b border-black/5 bg-white py-5">
+  <div class="container-page flex flex-wrap items-center justify-center gap-x-12 gap-y-3 md:gap-x-16 lg:gap-x-20">
+    {
+      contactItems.map((item) => (
+        <div class="flex items-center gap-2.5">
+          <img src={item.icon} alt="" class="icon-contact h-7 w-7 shrink-0 object-contain" />
+          <div class="leading-tight">
+            <p class="text-[15px] font-bold text-black">{item.title}</p>
+            <p class="text-[13px] text-black/55">{item.detail}</p>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</div>

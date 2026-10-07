@@ -4,21 +4,38 @@ import SectionHeading from "./ui/SectionHeading.astro";
 
 interface Props {
   image?: string;
+  align?: "start" | "center";
 }
 
-const { image = "/images/home/certificado.png" } = Astro.props;
+const { image = "/images/home/certificado.png", align = "start" } = Astro.props;
+const centered = align === "center";
 ---
 
-<section class="container-page grid gap-10 py-16 md:grid-cols-[minmax(0,420px)_1fr] md:items-center">
+<section
+  class:list={[
+    "container-page py-16",
+    centered
+      ? "flex flex-col items-center gap-8 md:flex-row md:justify-center md:text-left"
+      : "grid gap-10 md:grid-cols-[minmax(0,420px)_1fr] md:items-center",
+  ]}
+>
   <img
     src={image}
     alt="Certificado de calibración INACAL"
-    class="w-full rounded-card object-cover shadow-sm"
+    class:list={[
+      "w-full object-contain",
+      centered ? "max-w-[575px]" : "max-w-[420px] rounded-card shadow-sm",
+    ]}
     loading="lazy"
   />
-  <div class="flex flex-col items-start gap-4">
-    <SectionHeading>Acreditación</SectionHeading>
-    <p class="text-base text-black">
+  <div class:list={["flex flex-col gap-4", centered ? "items-center md:items-start" : "items-start"]}>
+    <SectionHeading
+      align={centered ? "center" : "left"}
+      class={centered ? "max-w-[8ch] md:text-left" : ""}
+    >
+      Acreditación
+    </SectionHeading>
+    <p class="max-w-md text-base uppercase leading-relaxed text-black">
       Acreditado por el organismo de acreditación INACAL- DA con registro N° LC – 016.
     </p>
     <Button href="/documentos/acreditacion.pdf" variant="secondary">Descargar PDF</Button>

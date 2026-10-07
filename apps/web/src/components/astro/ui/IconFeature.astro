@@ -9,11 +9,11 @@ const { icon, class: className = "" } = Astro.props;
 
 <div
   class:list={[
-    "flex aspect-square w-full max-w-[264px] flex-col items-center justify-center gap-4 rounded-card border-4 border-brand-purple p-6 text-center",
+    "flex aspect-square w-[264px] max-w-full flex-col items-center justify-center gap-3 rounded-card border-4 border-brand-purple p-3 text-center sm:gap-4 sm:p-6",
     className,
   ]}
 >
-  <img src={icon} alt="" class="h-[70px] w-[70px] object-contain" loading="lazy" />
+    <img src={icon} alt="" class="h-[146px] w-[146px] object-contain" loading="lazy" />
   <p class="text-lg font-medium uppercase leading-tight text-black">
     <slot />
   </p>

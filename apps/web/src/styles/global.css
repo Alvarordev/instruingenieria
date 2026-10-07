@@ -25,6 +25,12 @@ body {
   color: #1a1a1a;
 }
 
+/* Tint dark PNG icons to brand celeste (#0092fa) */
+.icon-contact {
+  filter: brightness(0) saturate(100%) invert(49%) sepia(96%) saturate(2990%) hue-rotate(176deg)
+    brightness(101%) contrast(101%);
+}
+
 details summary::-webkit-details-marker {
   display: none;
 }

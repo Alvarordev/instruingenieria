@@ -13,43 +13,10 @@ const links = [
   { href: "/contactos", label: "Contacto" },
 ];
 
-const contactItems = [
-  {
-    icon: "/images/shared/icon-location.png",
-    title: "Sede Principal: LIMA",
-    detail: "Calle Verbenas N° 113, Urb. Salamanca - Ate",
-  },
-  {
-    icon: "/images/shared/icon-mail.png",
-    title: "ventas@instruingenieria.com",
-    detail: "Correo de ventas",
-  },
-  {
-    icon: "/images/shared/icon-phone.png",
-    title: "(01) 4076003 / 51 949 262 786",
-    detail: "Central de Telefónica",
-  },
-];
 ---
 
 <header class="site-header sticky top-0 z-50">
   <TopBar />
-
-  <div class="border-b border-black/5 bg-white py-2">
-    <div class="container-page flex flex-wrap items-center justify-center gap-x-10 gap-y-2 md:justify-between">
-      {
-        contactItems.map((item) => (
-          <div class="flex items-center gap-2">
-            <img src={item.icon} alt="" class="h-6 w-6 shrink-0 object-contain" />
-            <div class="leading-tight">
-              <p class="text-sm font-semibold text-black">{item.title}</p>
-              <p class="text-xs text-black/60">{item.detail}</p>
-            </div>
-          </div>
-        ))
-      }
-    </div>
-  </div>
 
   <div class="bg-white shadow-[0_4px_4px_0_rgba(0,0,0,0.15)]">
     <div class="container-page flex flex-wrap items-center justify-between gap-4 py-3">
