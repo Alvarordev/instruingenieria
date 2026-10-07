@@ -1,6 +1,5 @@
 ---
 import LabCard from "../../components/astro/LabCard.astro";
-import SectionHeading from "../../components/astro/ui/SectionHeading.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { apiJson } from "../../lib/api";
 
@@ -11,33 +10,76 @@ interface Lab {
   description: string | null;
 }
 
+const FIGMA_ORDER = [
+  "laboratorio-de-presion",
+  "laboratorio-de-humedad",
+  "laboratorio-de-fuerza-y-torque",
+  "laboratorio-de-electricidad",
+  "laboratorio-de-longitud-y-angulo",
+  "laboratorio-de-masa",
+  "laboratorio-de-quimica-y-volumen",
+  "laboratorio-de-temperatura",
+  "laboratorio-de-ensayos-de-rigidez-dielectrica",
+];
+
 const labs = (await apiJson<Lab[]>("/api/services?group=metrologia")) ?? [];
+const orderedLabs = [...labs].sort((a, b) => {
+  const ia = FIGMA_ORDER.indexOf(a.slug);
+  const ib = FIGMA_ORDER.indexOf(b.slug);
+  return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+});
 ---
 
 <BaseLayout
   title="Metrología"
   description="Laboratorios de calibración de Instruingeniería, acreditados por INACAL bajo la norma ISO/IEC 17025."
 >
-  <section class="relative flex h-[420px] items-end overflow-hidden">
+  <section class="relative w-full overflow-hidden">
     <img
-      src="/images/nosotros/hero-bg.png"
+      src="/images/metrologia/hero-labs.jpg"
       alt="Laboratorio de calibración de Instruingeniería"
-      class="absolute inset-0 h-full w-full object-cover"
+      class="aspect-[1440/516] h-auto w-full object-cover"
       loading="eager"
     />
-    <div class="absolute inset-0 bg-black/25"></div>
-    <div class="container-page relative z-10 flex flex-col items-start gap-4 pb-12 text-white">
-      <h1 class="text-4xl font-bold uppercase md:text-[45px]">Laboratorios de Calibración</h1>
-      <p class="text-xl font-medium md:text-2xl">
-        Acreditados por el organismo de acreditación INACAL- DA con registro N° LC – 016.
-      </p>
-    </div>
   </section>
 
-  <section class="container-page flex flex-col gap-8 py-16">
-    <SectionHeading align="center">Nuestros laboratorios</SectionHeading>
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {labs.map((lab) => <LabCard name={lab.name} slug={lab.slug} description={lab.description} />)}
+  <section class="container-page pb-20 pt-14">
+    <h1 class="mb-2 font-semibold uppercase text-3xl text-brand-purple md:text-[35px]">
+      Laboratorios de Calibración
+    </h1>
+    <p class="max-w-[784px] text-[16px] font-medium uppercase leading-snug text-[#5a5a5a]">
+      Acreditado por el organismo de acreditación INACAL- DA con registro N° LC – 016.
+    </p>
+
+    <div class="mt-6 grid gap-8 text-[15px] leading-[1.55] text-[#4e4e4e] md:grid-cols-2 md:gap-9">
+      <p>
+        Nos distingue la pasión por la calidad y precisión en nuestras mediciones, avalada por la
+        acreditación del Organismo de Acreditación INACAL-DA (registro LC-016). Nuestro compromiso con
+        la excelencia se refleja en cada etapa, desde la recepción del equipo hasta la emisión del
+        certificado. Cada calibración es realizada por personal capacitado y bajo estrictos
+        procedimientos metrológicos que garantizan trazabilidad y confiabilidad.
+      </p>
+      <p>
+        El certificado de calibración de Instruingeniería S.A.C. incluye información esencial del
+        laboratorio, el cliente, el objeto calibrado, las fechas, el lugar de ensayo y las condiciones
+        ambientales, presentadas de manera clara. Además, se complementa con datos relevantes del
+        servicio realizado y cumple con las normas nacionales e internacionales aplicables, asegurando
+        que el usuario reciba un documento técnico completo y verificable.
+      </p>
     </div>
+
+    {
+      orderedLabs.length ? (
+        <div class="mt-16 grid gap-x-7 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
+          {orderedLabs.map((lab) => (
+            <LabCard name={lab.name} slug={lab.slug} />
+          ))}
+        </div>
+      ) : (
+        <p class="mt-16 rounded-card border border-black/10 bg-white p-8 text-center text-black/60">
+          Aún no hay laboratorios publicados.
+        </p>
+      )
+    }
   </section>
 </BaseLayout>
