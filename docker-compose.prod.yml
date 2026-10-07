@@ -1,6 +1,7 @@
 services:
   api:
     image: ghcr.io/alvarordev/instruingenieria-api:latest
+    pull_policy: always
     restart: unless-stopped
     environment:
       - NODE_ENV=production
@@ -15,6 +16,7 @@ services:
 
   web:
     image: ghcr.io/alvarordev/instruingenieria-web:latest
+    pull_policy: always
     restart: unless-stopped
     environment:
       - NODE_ENV=production
