@@ -4,17 +4,29 @@
 
   let { product = null, categories = [], brands = [], defaultType = "venta" } = $props();
 
+  function specsFromProduct(specs) {
+    if (!specs?.length) return [{ label: "", value: "" }];
+    return specs.map((item) =>
+      typeof item === "string" ? { label: item, value: "—" } : { label: item.label ?? "", value: item.value ?? "" },
+    );
+  }
+
   let name = $state(product?.name ?? "");
+  let model = $state(product?.model ?? "");
+  let sku = $state(product?.sku ?? "");
   let tagline = $state(product?.tagline ?? "");
   let description = $state(product?.description ?? "");
-  let specsText = $state((product?.specs ?? []).join("\n"));
+  let specs = $state(specsFromProduct(product?.specs));
   let applicationsText = $state((product?.applications ?? []).join("\n"));
+  let warranty = $state(product?.warranty ?? "");
   let categoryId = $state(product?.categoryId ?? "");
   let brandId = $state(product?.brandId ?? "");
   let type = $state(product?.type ?? defaultType);
   let price = $state(product?.price ?? "");
   let imageUrl = $state(product?.imageUrl ?? null);
+  let galleryUrls = $state([...(product?.galleryUrls ?? [])]);
   let fichaTecnicaUrl = $state(product?.fichaTecnicaUrl ?? "");
+  let inStock = $state(product?.inStock ?? true);
   let active = $state(product?.active ?? true);
   let saving = $state(false);
   let error = $state("");
@@ -37,18 +49,28 @@
     saving = true;
     error = "";
 
+    const specPairs = specs
+      .map((row) => ({ label: row.label.trim(), value: row.value.trim() }))
+      .filter((row) => row.label || row.value)
+      .map((row) => ({ label: row.label || row.value, value: row.value || "—" }));
+
     const body = {
       name,
+      model: model || null,
+      sku: sku || null,
       tagline: tagline || null,
       description,
-      specs: linesToArray(specsText),
+      specs: specPairs.length ? specPairs : null,
       applications: linesToArray(applicationsText),
+      warranty: warranty || null,
       categoryId: Number(categoryId),
       brandId: brandId ? Number(brandId) : null,
       type,
       price: price === "" ? null : Number(price),
       imageUrl,
+      galleryUrls: galleryUrls.filter(Boolean),
       fichaTecnicaUrl: fichaTecnicaUrl || null,
+      inStock,
       active,
       ...(product ? {} : { slug: slugify(name) }),
     };
@@ -80,6 +102,26 @@
   </label>
 
   <label class="flex flex-col gap-1 text-sm font-medium text-black">
+    Modelo
+    <input
+      type="text"
+      bind:value={model}
+      placeholder="Ej. Fluke 179"
+      class="rounded-md border border-black/20 px-3 py-2 text-sm"
+    />
+  </label>
+
+  <label class="flex flex-col gap-1 text-sm font-medium text-black">
+    Código (SKU)
+    <input
+      type="text"
+      bind:value={sku}
+      placeholder="Ej. EL-PD-0010"
+      class="rounded-md border border-black/20 px-3 py-2 text-sm"
+    />
+  </label>
+
+  <label class="flex flex-col gap-1 text-sm font-medium text-black">
     Subtítulo (tagline)
     <input
       type="text"
@@ -91,20 +133,48 @@
 
   <label class="flex flex-col gap-1 text-sm font-medium text-black">
     Descripción
-    <textarea bind:value={description} rows="3" class="rounded-md border border-black/20 px-3 py-2 text-sm"
-    ></textarea>
+    <textarea bind:value={description} rows="3" class="rounded-md border border-black/20 px-3 py-2 text-sm"></textarea>
   </label>
 
-  <label class="flex flex-col gap-1 text-sm font-medium text-black">
-    Especificaciones (una por línea)
-    <textarea bind:value={specsText} rows="6" class="rounded-md border border-black/20 px-3 py-2 text-sm"
-    ></textarea>
-  </label>
+  <fieldset class="flex flex-col gap-2">
+    <legend class="text-sm font-medium text-black">Especificaciones</legend>
+    {#each specs as row, index}
+      <div class="grid grid-cols-[1fr_1fr_auto] gap-2">
+        <input
+          type="text"
+          bind:value={row.label}
+          placeholder="Característica"
+          class="rounded-md border border-black/20 px-3 py-2 text-sm"
+        />
+        <input
+          type="text"
+          bind:value={row.value}
+          placeholder="Valor"
+          class="rounded-md border border-black/20 px-3 py-2 text-sm"
+        />
+        <button
+          type="button"
+          class="text-sm text-red-600"
+          onclick={() => (specs = specs.filter((_, i) => i !== index))}
+        >
+          Quitar
+        </button>
+      </div>
+    {/each}
+    <button type="button" class="self-start text-sm font-semibold text-brand-blue" onclick={() => (specs = [...specs, { label: "", value: "" }])}>
+      + Fila
+    </button>
+  </fieldset>
 
   <label class="flex flex-col gap-1 text-sm font-medium text-black">
     Aplicaciones (una por línea)
-    <textarea bind:value={applicationsText} rows="6" class="rounded-md border border-black/20 px-3 py-2 text-sm"
+    <textarea bind:value={applicationsText} rows="4" class="rounded-md border border-black/20 px-3 py-2 text-sm"
     ></textarea>
+  </label>
+
+  <label class="flex flex-col gap-1 text-sm font-medium text-black">
+    Garantía y soporte
+    <textarea bind:value={warranty} rows="3" class="rounded-md border border-black/20 px-3 py-2 text-sm"></textarea>
   </label>
 
   <label class="flex flex-col gap-1 text-sm font-medium text-black">
@@ -141,22 +211,17 @@
 
   <label class="flex flex-col gap-1 text-sm font-medium text-black">
     Precio (interno, no se muestra en el sitio)
-    <input
-      type="number"
-      step="0.01"
-      bind:value={price}
-      class="rounded-md border border-black/20 px-3 py-2 text-sm"
-    />
+    <input type="number" step="0.01" bind:value={price} class="rounded-md border border-black/20 px-3 py-2 text-sm" />
   </label>
 
   <label class="flex flex-col gap-1 text-sm font-medium text-black">
     Ficha técnica (URL de PDF, opcional)
-    <input
-      type="url"
-      bind:value={fichaTecnicaUrl}
-      placeholder="https://..."
-      class="rounded-md border border-black/20 px-3 py-2 text-sm"
-    />
+    <input type="url" bind:value={fichaTecnicaUrl} placeholder="https://..." class="rounded-md border border-black/20 px-3 py-2 text-sm" />
+  </label>
+
+  <label class="checkbox flex items-center gap-2 text-sm font-medium text-black">
+    <input type="checkbox" bind:checked={inStock} />
+    Stock disponible
   </label>
 
   <label class="checkbox flex items-center gap-2 text-sm font-medium text-black">
@@ -164,7 +229,23 @@
     Activo (visible en el sitio)
   </label>
 
+  <p class="text-sm font-medium text-black">Imagen principal</p>
   <ImageUploader bind:value={imageUrl} />
+
+  <fieldset class="flex flex-col gap-2">
+    <legend class="text-sm font-medium text-black">Galería adicional</legend>
+    {#each galleryUrls as _, index}
+      <div class="flex items-start gap-3">
+        <ImageUploader bind:value={galleryUrls[index]} />
+        <button type="button" class="text-sm text-red-600" onclick={() => (galleryUrls = galleryUrls.filter((_, i) => i !== index))}>
+          Quitar
+        </button>
+      </div>
+    {/each}
+    <button type="button" class="self-start text-sm font-semibold text-brand-blue" onclick={() => (galleryUrls = [...galleryUrls, null])}>
+      + Imagen
+    </button>
+  </fieldset>
 
   {#if error}<p class="error text-sm text-red-600">{error}</p>{/if}
 

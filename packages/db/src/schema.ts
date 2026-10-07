@@ -24,10 +24,14 @@ export const brands = sqliteTable("brands", {
   logoUrl: text("logo_url"),
 });
 
+export type ProductSpec = { label: string; value: string };
+
 export const products = sqliteTable("products", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
+  sku: text("sku").unique(),
+  model: text("model"),
   description: text("description"),
   categoryId: integer("category_id")
     .notNull()
@@ -36,10 +40,13 @@ export const products = sqliteTable("products", {
   type: text("type", { enum: ["venta", "alquiler"] }).notNull(),
   price: real("price"),
   imageUrl: text("image_url"),
+  galleryUrls: text("gallery_urls", { mode: "json" }).$type<string[]>(),
   tagline: text("tagline"),
-  specs: text("specs", { mode: "json" }).$type<string[]>(),
+  specs: text("specs", { mode: "json" }).$type<ProductSpec[]>(),
   applications: text("applications", { mode: "json" }).$type<string[]>(),
   fichaTecnicaUrl: text("ficha_tecnica_url"),
+  warranty: text("warranty"),
+  inStock: integer("in_stock", { mode: "boolean" }).notNull().default(true),
   active: integer("active", { mode: "boolean" }).notNull().default(true),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()

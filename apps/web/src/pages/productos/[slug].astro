@@ -1,22 +1,35 @@
 ---
+import BrandsStrip from "../../components/astro/BrandsStrip.astro";
 import ProductGrid from "../../components/astro/ProductGrid.astro";
-import Button from "../../components/astro/ui/Button.astro";
+import ProductAddToCart from "../../components/svelte/ProductAddToCart.svelte";
+import ProductGallery from "../../components/svelte/ProductGallery.svelte";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { apiJson } from "../../lib/api";
+import { DEFAULT_WARRANTY, whatsappUrl } from "../../lib/contact";
+
+interface Spec {
+  label: string;
+  value: string;
+}
 
 interface Product {
   id: number;
   slug: string;
   name: string;
+  sku: string | null;
+  model: string | null;
   description: string | null;
   categoryId: number;
   brandId: number | null;
   type: "venta" | "alquiler";
   imageUrl: string | null;
+  galleryUrls: string[] | null;
   tagline: string | null;
-  specs: string[] | null;
+  specs: Spec[] | null;
   applications: string[] | null;
   fichaTecnicaUrl: string | null;
+  warranty: string | null;
+  inStock: boolean;
 }
 
 interface Category {
@@ -33,8 +46,6 @@ interface Brand {
   logoUrl: string | null;
 }
 
-const WHATSAPP_NUMBER = "51949262786";
-
 const { slug } = Astro.params;
 const product = await apiJson<Product>(`/api/products/${slug}`);
 
@@ -46,126 +57,137 @@ const categories = (await apiJson<Category[]>("/api/categories")) ?? [];
 const category = categories.find((c) => c.id === product.categoryId);
 const tipo = category?.parentId ? categories.find((c) => c.id === category.parentId) : category;
 const tipoLabel = tipo?.name ?? "";
+const crumb = [tipoLabel, product.model].filter(Boolean).join(" - ");
 
-// Hojas hermanas dentro del mismo tipo (para relacionados y marcas usadas)
-const siblingLeafIds = category?.parentId
-  ? categories.filter((c) => c.parentId === category.parentId).map((c) => c.id)
-  : category
-    ? [category.id]
-    : [];
-
-const relatedProducts = (
-  (await apiJson<Product[]>(`/api/products?category=${product.categoryId}&type=${product.type}`)) ?? []
-)
-  .filter((p) => p.slug !== product.slug)
-  .slice(0, 4);
+const sameCategory =
+  (await apiJson<Product[]>(`/api/products?category=${product.categoryId}&type=${product.type}`)) ?? [];
+const sameType = (await apiJson<Product[]>(`/api/products?type=${product.type}`)) ?? [];
+const relatedProducts = [...sameCategory, ...sameType]
+  .filter((p, index, arr) => p.slug !== product.slug && arr.findIndex((x) => x.slug === p.slug) === index)
+  .slice(0, 5);
 
 const allBrands = (await apiJson<Brand[]>("/api/brands")) ?? [];
-const brandsUsed = siblingLeafIds.length
-  ? Array.from(
-      new Set(
-        ((await apiJson<Product[]>(`/api/products?category=${siblingLeafIds.join(",")}`)) ?? [])
-          .map((p) => p.brandId)
-          .filter((id): id is number => id !== null),
-      ),
-    )
-      .map((id) => allBrands.find((b) => b.id === id))
-      .filter((b): b is Brand => b !== undefined)
-  : [];
 
-const whatsappText = encodeURIComponent(`Hola, quiero cotizar el producto: ${product.name}`);
+const gallery = [product.imageUrl, ...(product.galleryUrls ?? [])].filter(
+  (url, index, arr): url is string => Boolean(url) && arr.indexOf(url) === index,
+);
+const galleryImages = gallery.length === 1 ? [gallery[0], gallery[0]] : gallery;
+const specs = product.specs ?? [];
+const warranty = product.warranty || DEFAULT_WARRANTY;
+const asesoriaHref = whatsappUrl("Hola, quiero cotizar productos con ustedes.");
 ---
 
 <BaseLayout title={product.name} description={product.description ?? undefined}>
-  <section class="container-page flex flex-col gap-10 py-16">
-    <div class="grid gap-8 md:grid-cols-[385px_1fr]">
-      <div class="flex items-center justify-center rounded-card bg-gray-100 p-6">
-        {
-          product.imageUrl ? (
-            <img src={product.imageUrl} alt={product.name} class="max-h-[400px] w-full object-contain" />
-          ) : (
-            <div class="h-[400px] w-full rounded-md bg-gray-200" aria-hidden="true" />
-          )
-        }
-      </div>
+  <section class="mx-auto w-full max-w-[1130px] px-6 pt-8">
+    {
+      crumb && (
+        <a
+          href="/productos"
+          class="mb-6 inline-flex items-center gap-2.5 text-sm font-medium text-brand-purple hover:opacity-80"
+        >
+          <span class="inline-flex h-[18px] w-9 shrink-0 overflow-hidden">
+            <img src="/images/shared/icon-home.svg" alt="" class="h-[18px] w-9 object-contain object-left" />
+          </span>
+          {crumb}
+        </a>
+      )
+    }
 
-      <div class="flex flex-col items-start gap-3">
-        {tipoLabel && <p class="text-lg capitalize text-black/60">{tipoLabel}</p>}
-        <h1 class="font-display text-3xl font-black uppercase text-brand-blue md:text-4xl">{product.name}</h1>
-        {product.tagline && <p class="text-xl font-bold text-brand-purple">{product.tagline}</p>}
-        {
-          product.specs && product.specs.length > 0 && (
-            <ul class="list-disc space-y-1 pl-5 text-[17px] leading-relaxed text-[#4e4e4e]">
-              {product.specs.map((spec) => (
-                <li>{spec}</li>
-              ))}
-            </ul>
-          )
-        }
-        <div class="mt-2 flex flex-wrap gap-4">
-          {
-            product.fichaTecnicaUrl && (
-              <Button href={product.fichaTecnicaUrl} variant="secondary">
-                Ficha técnica
-              </Button>
-            )
-          }
-          <Button href={`https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappText}`} variant="secondary">
-            Cotizar en WhatsApp
-          </Button>
+    <div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-12">
+      <ProductGallery client:visible name={product.name} images={galleryImages} />
+
+      <div class="flex max-w-[450px] flex-col gap-2">
+        {product.model && <p class="text-xl capitalize leading-[23px] text-[#807f7f]">{product.model}</p>}
+        <h1 class="font-display text-[28px] font-black uppercase leading-[1.2] text-brand-blue md:text-[35px] md:leading-[42px]">
+          {product.name}
+        </h1>
+        {product.sku && <p class="text-xl capitalize leading-[23px] text-[#807f7f]">Código: {product.sku}</p>}
+        <a
+          href={product.fichaTecnicaUrl ?? "#ficha-tecnica"}
+          target={product.fichaTecnicaUrl ? "_blank" : undefined}
+          rel={product.fichaTecnicaUrl ? "noopener noreferrer" : undefined}
+          class="mt-1 inline-flex h-[34px] w-[134px] items-center justify-center rounded-[10px] border border-brand-blue text-sm font-bold uppercase text-brand-blue"
+        >
+          Ficha técnica
+        </a>
+        {product.inStock && <p class="mt-2 text-xl font-bold leading-[23px] text-brand-purple">Stock disponible</p>}
+        <div class="mt-1">
+          <ProductAddToCart client:load product={product} />
         </div>
       </div>
     </div>
+  </section>
 
+  <section class="mx-auto mt-14 w-full max-w-[982px] px-6">
     {
-      (product.description || (product.applications && product.applications.length > 0)) && (
-        <div class="rounded-card border border-black/10 bg-white p-8 shadow-sm md:p-10">
-          {product.description && (
-            <>
-              <h2 class="mb-3 text-2xl font-semibold capitalize text-brand-purple">Descripción:</h2>
-              <p class="mb-6 text-[15px] leading-relaxed text-[#4e4e4e]">{product.description}</p>
-            </>
-          )}
-          {product.applications && product.applications.length > 0 && (
-            <>
-              <h2 class="mb-3 text-xl font-semibold text-brand-purple">Aplicaciones:</h2>
-              <ul class="list-disc space-y-1 pl-5 text-[15px] leading-relaxed text-[#4e4e4e]">
-                {product.applications.map((application) => (
-                  <li>{application}</li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
+      product.description && (
+        <details open class="group border-b border-black/15">
+          <summary class="flex cursor-pointer list-none items-center justify-between py-4 marker:content-none">
+            <span class="text-xl font-semibold capitalize text-brand-purple">Descripción</span>
+            <span class="inline-flex size-5 shrink-0 items-center justify-center -rotate-90 group-open:rotate-90">
+              <img src="/images/shared/icon-accordion-chevron.svg" alt="" class="h-5 w-3" />
+            </span>
+          </summary>
+          <p class="pb-6 text-[15px] leading-[23px] text-[#4e4e4e]">{product.description}</p>
+        </details>
       )
     }
+    {
+      specs.length > 0 && (
+        <details id="ficha-tecnica" class="group border-b border-black/15" open>
+          <summary class="flex cursor-pointer list-none items-center justify-between py-4 marker:content-none">
+            <span class="text-xl font-semibold capitalize text-brand-purple">Ficha Técnica</span>
+            <span class="inline-flex size-5 shrink-0 items-center justify-center -rotate-90 group-open:rotate-90">
+              <img src="/images/shared/icon-accordion-chevron.svg" alt="" class="h-5 w-3" />
+            </span>
+          </summary>
+          <div class="mb-6 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+            <div class="border-b border-[#e5e7eb] bg-[#f8f7ff] px-5 py-4 text-xl font-semibold text-brand-purple">
+              Especificaciones
+            </div>
+            <table class="w-full text-[17px] leading-[23px]">
+              <tbody>
+                {specs.map((spec, index) => (
+                  <tr class={index < specs.length - 1 ? "border-b border-[#e5e7eb]" : ""}>
+                    <th class="w-[177px] px-5 py-3.5 text-left font-semibold text-brand-purple">{spec.label}</th>
+                    <td class="px-5 py-3.5 text-right font-normal text-[#4e4e4e]">{spec.value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      )
+    }
+    <details class="group border-b border-black/15" open>
+      <summary class="flex cursor-pointer list-none items-center justify-between py-4 marker:content-none">
+        <span class="text-xl font-semibold capitalize text-brand-purple">Garantía y soporte</span>
+        <span class="inline-flex size-5 shrink-0 items-center justify-center -rotate-90 group-open:rotate-90">
+          <img src="/images/shared/icon-accordion-chevron.svg" alt="" class="h-5 w-3" />
+        </span>
+      </summary>
+      <p class="pb-6 text-[15px] leading-[23px] text-[#4e4e4e]">{warranty}</p>
+    </details>
   </section>
 
   {
     relatedProducts.length > 0 && (
-      <section class="container-page flex flex-col gap-8 pb-16">
-        <h2 class="font-display text-center text-2xl font-bold uppercase text-brand-purple md:text-3xl">
-          Productos relacionados
-        </h2>
-        <ProductGrid products={relatedProducts} />
+      <section class="mx-auto flex w-full max-w-[1130px] flex-col gap-[17px] px-6 py-14">
+        <h2 class="font-display text-center text-[26px] font-bold uppercase text-brand-purple">Productos relacionados</h2>
+        <ProductGrid products={relatedProducts} compact class="gap-5 lg:grid-cols-5" />
       </section>
     )
   }
 
-  {
-    brandsUsed.length > 0 && (
-      <section class="container-page flex flex-col items-center gap-6 pb-16 text-center">
-        <h2 class="text-2xl font-semibold uppercase text-brand-purple">Marcas que usamos</h2>
-        <div class="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-          {brandsUsed.map((brand) =>
-            brand.logoUrl ? (
-              <img src={brand.logoUrl} alt={brand.name} class="h-10 w-auto object-contain" loading="lazy" />
-            ) : (
-              <span class="text-lg font-semibold text-black/70">{brand.name}</span>
-            ),
-          )}
-        </div>
-      </section>
-    )
-  }
+  <section class="mx-auto w-full max-w-[1130px] px-6 pb-4">
+    <a href={asesoriaHref} target="_blank" rel="noopener noreferrer" class="block overflow-hidden rounded-[20px]">
+      <img
+        src="/images/productos/banner-cotiza.png"
+        alt="Cotiza tus productos con nosotros en menos de 5 minutos. Solicitar asesoría."
+        class="h-auto w-full object-cover"
+      />
+    </a>
+  </section>
+
+  <BrandsStrip brands={allBrands} />
 </BaseLayout>

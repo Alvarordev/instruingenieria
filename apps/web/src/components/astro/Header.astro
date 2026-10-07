@@ -1,4 +1,5 @@
 ---
+import CartButton from "../svelte/CartButton.svelte";
 import TopBar from "./TopBar.astro";
 
 const links = [
@@ -66,16 +67,22 @@ const contactItems = [
         }
       </nav>
 
-      <label class="flex items-center gap-2 rounded-pill border-2 border-brand-blue px-4 py-2">
-        <span class="sr-only">Buscar</span>
-        <input
-          type="search"
-          name="q"
-          placeholder="Buscar"
-          class="w-32 border-none bg-transparent text-sm outline-none placeholder:text-black/40 md:w-44"
-        />
-        <img src="/images/shared/icon-search.svg" alt="" class="h-4 w-4 shrink-0" />
-      </label>
+      <div class="flex items-center gap-3">
+        <form action="/productos" method="get" class="flex items-center gap-2 rounded-pill border-2 border-brand-blue px-4 py-2">
+          <label class="sr-only" for="site-search">Buscar</label>
+          <input
+            id="site-search"
+            type="search"
+            name="q"
+            placeholder="Buscar"
+            class="w-32 border-none bg-transparent text-sm outline-none placeholder:text-black/40 md:w-44"
+          />
+          <button type="submit" class="shrink-0" aria-label="Buscar">
+            <img src="/images/shared/icon-search.svg" alt="" class="h-4 w-4" />
+          </button>
+        </form>
+        <CartButton client:load />
+      </div>
     </div>
   </div>
 </header>

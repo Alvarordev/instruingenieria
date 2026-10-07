@@ -6,16 +6,21 @@ import { apiJson } from "../../../lib/api";
 interface Product {
   id: number;
   name: string;
+  sku: string | null;
+  model: string | null;
   tagline: string | null;
   description: string | null;
-  specs: string[] | null;
+  specs: { label: string; value: string }[] | string[] | null;
   applications: string[] | null;
+  warranty: string | null;
   categoryId: number;
   brandId: number | null;
   type: "venta" | "alquiler";
   price: number | null;
   imageUrl: string | null;
+  galleryUrls: string[] | null;
   fichaTecnicaUrl: string | null;
+  inStock: boolean;
   active: boolean;
 }
 

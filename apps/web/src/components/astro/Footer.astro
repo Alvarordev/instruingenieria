@@ -1,67 +1,98 @@
 ---
 const mapQuery = encodeURIComponent("Calle Verbenas 113, Urb. Salamanca, Ate, Lima, Perú");
+const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer bg-brand-purple text-white">
-  <div class="container-page grid gap-10 py-12 md:grid-cols-[1fr_1.4fr]">
-    <iframe
-      title="Ubicación de Instruingeniería"
-      src={`https://www.google.com/maps?q=${mapQuery}&output=embed`}
-      class="h-[280px] w-full rounded-card border-0"
-      loading="lazy"
-      referrerpolicy="no-referrer-when-downgrade"
-    ></iframe>
+  <div class="grid md:grid-cols-[minmax(12rem,34%)_1fr] xl:grid-cols-[minmax(16rem,46.6%)_1fr]">
+    <div class="relative h-[240px] w-full overflow-hidden md:h-full md:min-h-[314px]">
+      <iframe
+        title="Ubicación de Instruingeniería"
+        src={`https://www.google.com/maps?q=${mapQuery}&output=embed`}
+        class="absolute inset-0 h-full w-full border-0"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+      ></iframe>
+    </div>
 
-    <div class="grid gap-8 sm:grid-cols-3">
-      <div>
-        <h3 class="mb-3 text-lg font-bold uppercase">Ubicación</h3>
-        <div class="space-y-3 text-sm">
-          <div>
-            <p class="font-semibold">Sede principal: Lima</p>
-            <p class="text-white/80">Calle Verbenas N° 113, Urb. Salamanca - Ate</p>
+    <div class="grid min-w-0 gap-8 px-6 py-5 sm:grid-cols-2 sm:gap-x-6 lg:px-10 lg:py-[21px] xl:gap-x-10">
+      <div class="flex flex-col gap-6">
+        <div>
+          <h3 class="mb-3 text-[20px] font-bold uppercase leading-none">Ubicación</h3>
+          <div class="flex flex-col gap-4">
+            <div class="flex items-start gap-2">
+              <img src="/images/shared/icon-location-white.png" alt="" class="mt-0.5 size-[26px] shrink-0 object-contain" />
+              <div>
+                <p class="text-[14px] font-semibold leading-tight">Sede principal: Lima</p>
+                <p class="text-[12px] leading-tight">Calle Verbenas N° 113, Urb. Salamanca - Ate</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2">
+              <img src="/images/shared/icon-location-white.png" alt="" class="mt-0.5 size-[26px] shrink-0 object-contain" />
+              <div>
+                <p class="text-[14px] font-semibold leading-tight">Sede secundaria: Huancayo</p>
+                <p class="text-[12px] leading-tight">Calle Verbenas N° 113, Urb. Salamanca - Ate</p>
+              </div>
+            </div>
           </div>
-          <div>
-            <p class="font-semibold">Sede secundaria: Huancayo</p>
-            <p class="text-white/80">Calle Verbenas N° 113, Urb. Salamanca - Ate</p>
+        </div>
+
+        <div>
+          <h3 class="mb-2 text-[20px] font-bold uppercase leading-none">Atención</h3>
+          <div class="flex gap-8">
+            <div>
+              <p class="text-[14px] font-semibold">Lunes a Viernes</p>
+              <p class="text-[12px]">08:30 a 18:00h</p>
+            </div>
+            <div>
+              <p class="text-[14px] font-semibold">Sábados</p>
+              <p class="text-[12px]">08:30 a 13:00h</p>
+            </div>
           </div>
         </div>
       </div>
 
       <div>
-        <h3 class="mb-3 text-lg font-bold uppercase">Atención</h3>
-        <div class="space-y-3 text-sm">
-          <div>
-            <p class="font-semibold">Lunes a Viernes</p>
-            <p class="text-white/80">08:30 a 18:00h</p>
+        <h3 class="mb-3 text-[20px] font-bold uppercase leading-none">Contactos</h3>
+        <div class="flex flex-col gap-4">
+          <div class="flex items-start gap-2">
+            <img src="/images/shared/icon-mail-white.png" alt="" class="size-[34px] shrink-0 object-contain" />
+            <div>
+              <a href="mailto:mayker.ramos@instruingenieria.com" class="break-all text-[14px] font-semibold leading-tight hover:underline">
+                mayker.ramos@instruingenieria.com
+              </a>
+              <p class="text-[12px] leading-tight">Correo principal</p>
+            </div>
           </div>
-          <div>
-            <p class="font-semibold">Sábados</p>
-            <p class="text-white/80">08:30 a 13:00h</p>
+          <div class="flex items-start gap-2">
+            <img src="/images/shared/icon-mail-white.png" alt="" class="size-[34px] shrink-0 object-contain" />
+            <div>
+              <a href="mailto:ventas@instruingenieria.com" class="break-all text-[14px] font-semibold leading-tight hover:underline">
+                ventas@instruingenieria.com
+              </a>
+              <p class="text-[12px] leading-tight">Correo de ventas</p>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div>
-        <h3 class="mb-3 text-lg font-bold uppercase">Contactos</h3>
-        <div class="space-y-3 text-sm">
-          <div>
-            <p class="font-semibold">mayker.ramos@instruingenieria.com</p>
-            <p class="text-white/80">Correo principal</p>
+          <div class="flex items-start gap-2">
+            <img src="/images/shared/icon-phone-white.png" alt="" class="size-[29px] shrink-0 object-contain" />
+            <div>
+              <p class="text-[14px] font-semibold leading-tight">(01) 4076003 / 51 949 262 786</p>
+              <p class="text-[12px] leading-tight">Central de Telefónica</p>
+            </div>
           </div>
-          <div>
-            <p class="font-semibold">ventas@instruingenieria.com</p>
-            <p class="text-white/80">Correo de ventas</p>
-          </div>
-          <div>
-            <p class="font-semibold">(01) 4076003 / 51 949 262 786</p>
-            <p class="text-white/80">Central Telefónica</p>
+          <div class="flex items-start gap-2">
+            <img src="/images/shared/icon-phone-white.png" alt="" class="size-[29px] shrink-0 object-contain" />
+            <div>
+              <p class="text-[14px] font-semibold leading-tight">988 621 211 / (01) 2786280</p>
+              <p class="text-[12px] leading-tight">Central de Telefónica</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="border-t border-white/15 bg-black/10 py-3 text-center text-xs">
-    <p>&copy; {new Date().getFullYear()} Instruingeniería S. A. C. Todos los derechos reservados.</p>
+  <div class="flex h-[55px] items-center justify-center px-4 text-center text-[15px]">
+    <p>© {year} Instruingeniería S. A. C. Todos los derechos reservados.</p>
   </div>
 </footer>

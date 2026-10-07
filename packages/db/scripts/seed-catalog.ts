@@ -2,7 +2,23 @@ import { eq } from "drizzle-orm";
 import { existsSync } from "node:fs";
 import { copyFile, mkdir, readdir } from "node:fs/promises";
 import { join } from "node:path";
-import { brands, categories, db, products, services } from "../src";
+import { brands, categories, db, products, services, type ProductSpec } from "../src";
+
+function toSpecs(lines: string[] | undefined): ProductSpec[] | null {
+  if (!lines?.length) return null;
+  return lines.map((line) => {
+    const trimmed = line.replace(/\.$/, "").trim();
+    const idx = trimmed.indexOf(":");
+    if (idx > 0) {
+      return { label: trimmed.slice(0, idx).trim(), value: trimmed.slice(idx + 1).trim() };
+    }
+    return { label: trimmed, value: "—" };
+  });
+}
+
+function skuFromSlug(slug: string) {
+  return `EL-PD-${slug.toUpperCase()}`;
+}
 
 // Mismo fallback que usa apps/api/src/lib/uploads.ts, para que este script
 // escriba en el mismo directorio que sirve /uploads/* tanto en dev local
@@ -120,8 +136,12 @@ async function upsertProduct(input: {
   brandId?: number | null;
   type: "venta" | "alquiler";
   tagline?: string | null;
+  model?: string | null;
+  sku?: string | null;
   specs?: string[] | null;
   applications?: string[] | null;
+  warranty?: string | null;
+  inStock?: boolean;
 }) {
   const existing = await db.select().from(products).where(eq(products.slug, input.slug)).limit(1);
   const values = {
@@ -131,8 +151,12 @@ async function upsertProduct(input: {
     brandId: input.brandId ?? null,
     type: input.type,
     tagline: input.tagline ?? null,
-    specs: input.specs ?? null,
+    model: input.model ?? input.name,
+    sku: input.sku ?? skuFromSlug(input.slug),
+    specs: toSpecs(input.specs ?? undefined),
     applications: input.applications ?? null,
+    warranty: input.warranty ?? null,
+    inStock: input.inStock ?? true,
   };
   if (existing[0]) {
     await db.update(products).set(values).where(eq(products.id, existing[0].id));
@@ -688,16 +712,49 @@ await upsertProduct({
 });
 
 await upsertProduct({
-  name: "Fluke 87V",
+  name: "Multímetro Industrial True-RMS Fluke 87V",
   slug: "fluke-87v",
   categoryId: subInstrumentosElectricidad,
   brandId: brandFluke,
   type: "venta",
+  model: "Fluke 87V",
   tagline: "Multímetro industrial de precisión",
   description: "Multímetro digital de referencia para diagnóstico eléctrico industrial de alta precisión.",
   specs: ["True-RMS.", "Medición de temperatura, capacitancia y frecuencia."],
   applications: ["Diagnóstico eléctrico industrial.", "Calibración de instrumentos eléctricos."],
 });
+
+const DEFAULT_WARRANTY =
+  "Se gestionarán reemplazos y reintegros únicamente cuando se compruebe una falla de origen y el reclamo se efectúe dentro de la vigencia de la garantía.";
+
+const productFluke179 = await upsertProduct({
+  name: "Multímetro Digital True-RMS",
+  slug: "fluke-179",
+  categoryId: subMultimetros,
+  brandId: brandFluke,
+  type: "venta",
+  model: "Fluke 179",
+  sku: "EL-PD-0010",
+  tagline: "Multímetro Digital True-RMS",
+  description:
+    "El Fluke 179 es un multímetro digital True-RMS diseñado para trabajos de mantenimiento, diagnóstico y medición eléctrica en aplicaciones industriales y electrónicas. Permite medir tensión AC/DC, corriente AC/DC, resistencia, capacitancia, frecuencia y temperatura, incorporando selección de rango automática y manual, pantalla retroiluminada y funciones de registro mínimo, máximo y promedio.",
+  specs: [
+    "Tensión AC/DC: Hasta 1000 V",
+    "Corriente AC/DC: Hasta 10 A",
+    "Tecnología: True-RMS",
+    "Resistencia: Hasta 50 MΩ",
+    "Capacitancia: Hasta 10 000 µF",
+    "Frecuencia: Hasta 100 kHz",
+    "Temperatura: -40 °C a 400 °C",
+    "Seguridad: CAT III 1000 V / CAT IV 600 V",
+    "Pantalla: Digital retroiluminada",
+    "Alimentación: Batería de 9 V",
+  ],
+  applications: ["Mantenimiento eléctrico industrial.", "Diagnóstico de circuitos electrónicos."],
+  warranty: DEFAULT_WARRANTY,
+});
+await attachProductImage("fluke-179", productFluke179);
+await attachProductImage("fluke-87v", productFluke179);
 
 await upsertProduct({
   name: "Termómetro Infrarrojo TI-200",

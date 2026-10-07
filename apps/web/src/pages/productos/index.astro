@@ -1,36 +1,115 @@
 ---
+import BrandsStrip from "../../components/astro/BrandsStrip.astro";
 import ProductGrid from "../../components/astro/ProductGrid.astro";
-import ProductFilters from "../../components/svelte/ProductFilters.svelte";
+import VentaFilters from "../../components/svelte/VentaFilters.svelte";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { apiJson } from "../../lib/api";
+import { whatsappUrl } from "../../lib/contact";
 
 interface Product {
   id: number;
   slug: string;
   name: string;
+  model: string | null;
   tagline: string | null;
   imageUrl: string | null;
   type: "venta" | "alquiler";
+  categoryId: number;
+  brandId: number | null;
 }
 
-const category = Astro.url.searchParams.get("category") ?? "";
-const brand = Astro.url.searchParams.get("brand") ?? "";
-const type = Astro.url.searchParams.get("type") ?? "";
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  parentId: number | null;
+}
 
-const query = new URLSearchParams();
-if (category) query.set("category", category);
-if (brand) query.set("brand", brand);
-if (type) query.set("type", type);
+interface Brand {
+  id: number;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+}
+
+const allCategories = (await apiJson<Category[]>("/api/categories")) ?? [];
+const parents = allCategories.filter((c) => c.parentId === null);
+const leavesByParent: Record<number, Category[]> = {};
+for (const parent of parents) {
+  leavesByParent[parent.id] = allCategories.filter((c) => c.parentId === parent.id);
+}
+
+const categoryParam = Astro.url.searchParams.get("category") ?? "";
+const checkedCategoryIds = categoryParam
+  ? categoryParam
+      .split(",")
+      .map(Number)
+      .filter((id) => allCategories.some((c) => c.id === id && c.parentId !== null))
+  : [];
+
+const brandParam = Astro.url.searchParams.get("brand") ?? "";
+const checkedBrandIds = brandParam.split(",").filter(Boolean);
+const q = Astro.url.searchParams.get("q") ?? "";
+
+const query = new URLSearchParams({ type: "venta" });
+if (checkedCategoryIds.length) query.set("category", checkedCategoryIds.join(","));
+if (checkedBrandIds.length) query.set("brand", brandParam);
+if (q) query.set("q", q);
 
 const products = (await apiJson<Product[]>(`/api/products?${query}`)) ?? [];
-const categories = (await apiJson<{ id: number; name: string }[]>("/api/categories")) ?? [];
-const brands = (await apiJson<{ id: number; name: string }[]>("/api/brands")) ?? [];
+const brands = (await apiJson<Brand[]>("/api/brands")) ?? [];
+const asesoriaHref = whatsappUrl("Hola, quiero cotizar productos con ustedes.");
 ---
 
-<BaseLayout title="Productos">
-  <div class="container-page flex flex-col gap-8 py-12">
-    <h1 class="text-3xl font-semibold uppercase text-brand-purple">Productos</h1>
-    <ProductFilters client:visible categories={categories} brands={brands} />
-    <ProductGrid products={products} />
-  </div>
+<BaseLayout title="Productos" description="Catálogo de venta de instrumentos y equipos — Instruingeniería.">
+  <h1 class="sr-only">Productos</h1>
+
+  <section class="container-page pt-8">
+    <div
+      class="aspect-[1214/256] w-full overflow-hidden rounded-[10px] border border-brand-blue"
+    >
+      <img
+        src="/images/productos/hero-electricidad.jpg"
+        alt="Electricidad y electrónica. Instrumentos de medición y prueba para sistemas eléctricos y automatización industrial."
+        class="h-full w-full object-cover"
+      />
+    </div>
+  </section>
+
+  <section class="container-page grid gap-8 py-10 lg:grid-cols-[297px_1fr]">
+    <aside>
+      <VentaFilters
+        client:visible
+        parents={parents}
+        leavesByParent={leavesByParent}
+        brands={brands}
+        checkedCategoryIds={checkedCategoryIds}
+        checkedBrandIds={checkedBrandIds}
+        q={q}
+      />
+    </aside>
+    <div>
+      {
+        products.length ? (
+          <ProductGrid products={products} class="lg:grid-cols-4" />
+        ) : (
+          <p class="rounded-card border border-black/10 bg-white p-8 text-center text-black/60">
+            No hay productos que coincidan con el filtro.
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="container-page pb-4">
+    <a href={asesoriaHref} target="_blank" rel="noopener noreferrer" class="block overflow-hidden rounded-[20px]">
+      <img
+        src="/images/productos/banner-cotiza.png"
+        alt="Cotiza tus productos con nosotros en menos de 5 minutos. Solicitar asesoría."
+        class="h-auto w-full object-cover"
+      />
+    </a>
+  </section>
+
+  <BrandsStrip brands={brands} />
 </BaseLayout>

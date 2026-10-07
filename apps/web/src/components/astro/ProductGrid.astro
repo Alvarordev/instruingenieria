@@ -4,6 +4,7 @@ import ProductCard from "./ProductCard.astro";
 interface Product {
   slug: string;
   name: string;
+  model?: string | null;
   tagline?: string | null;
   imageUrl: string | null;
   type: "venta" | "alquiler";
@@ -12,11 +13,12 @@ interface Product {
 interface Props {
   products: Product[];
   class?: string;
+  compact?: boolean;
 }
 
-const { products, class: className = "" } = Astro.props;
+const { products, class: className = "", compact = false } = Astro.props;
 ---
 
 <div class:list={["grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4", className]}>
-  {products.map((product) => <ProductCard product={product} />)}
+  {products.map((product) => <ProductCard product={product} compact={compact} />)}
 </div>
